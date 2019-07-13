@@ -1,8 +1,8 @@
-#include "RenderWindow.h"
+#include "WindowContainer.h"
 
 namespace DXEngine
 {
-	bool DXEngine::RenderWindow::Initialize (HINSTANCE hInstance, std::string windowTitle, std::string windowClass, int width, int height)
+	bool DXEngine::RenderWindow::Initialize (WindowContainer *pWindowContainer, HINSTANCE hInstance, std::string windowTitle, std::string windowClass, int width, int height)
 	{
 		this->m_hInstance = hInstance;
 
@@ -28,7 +28,7 @@ namespace DXEngine
 			NULL,
 			NULL,
 			this->m_hInstance,
-			nullptr
+			pWindowContainer
 		);
 
 		if (this->m_Handle == NULL)
@@ -76,12 +76,51 @@ namespace DXEngine
 		}
 	}
 
+	LRESULT CALLBACK HandleMessageRedirect (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (uMsg)
+		{
+			case WM_CLOSE:
+				DestroyWindow (hwnd);
+				return 0;
+
+			default:
+				WindowContainer* const pWindow = reinterpret_cast<WindowContainer*> (GetWindowLongPtr (hwnd, GWLP_USERDATA));
+				return pWindow->WindowProc (hwnd, uMsg, wParam, lParam);
+		}
+	}
+
+	LRESULT CALLBACK HandleMessageSetup (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		switch (uMsg)
+		{
+			case WM_NCCREATE: // Windows create
+			{
+				const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW *>(lParam);
+				WindowContainer* pWindow = reinterpret_cast<WindowContainer *>(pCreate->lpCreateParams);
+
+				if (pWindow == nullptr)
+				{
+					ErrorLogger::Log ("Critical Error: Pointer to window container is null during WM_NCCREATE.");
+					exit (-1);
+				}
+
+				SetWindowLongPtr (hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));
+				SetWindowLongPtr (hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(HandleMessageRedirect));
+				return pWindow->WindowProc (hwnd, uMsg, wParam, lParam);
+			}
+
+			default:
+				return DefWindowProc (hwnd, uMsg, wParam, lParam);
+		}
+	}
+
 	void RenderWindow::RegisterWindowClass ()
 	{
 		WNDCLASSEX wc;
 
 		wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-		wc.lpfnWndProc = DefWindowProc;
+		wc.lpfnWndProc = HandleMessageSetup;
 
 		wc.cbClsExtra = 0;
 		wc.cbWndExtra = 0;
