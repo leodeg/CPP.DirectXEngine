@@ -5,7 +5,7 @@ namespace DXEngine
 {
 	bool DXEngine::Engine::Initialize (HINSTANCE hInstance, std::string windowTitle, std::string windowClass, int width, int height)
 	{
-		return this->m_RenderWindow.Initialize(this, hInstance, windowTitle, windowClass, width, height);
+		return this->m_RenderWindow.Initialize (this, hInstance, windowTitle, windowClass, width, height);
 	}
 	bool Engine::ProcessMessages ()
 	{
@@ -18,13 +18,12 @@ namespace DXEngine
 		{
 			unsigned char ch = m_Keyboard.ReadChar ();
 
-#ifndef DEBUG
+		#ifdef DEBUG
 			std::string outMessage = "Char: ";
 			outMessage += ch;
 			outMessage += "\n";
-
 			OutputDebugStringA (outMessage.c_str ());
-#endif // DEBUG
+		#endif // DEBUG
 		}
 
 		while (!m_Keyboard.KeyBufferIsEmpty ())
@@ -32,20 +31,31 @@ namespace DXEngine
 			KeyboardEvent keycodeEvent = m_Keyboard.ReadKey ();
 			unsigned char keycode = keycodeEvent.GetKeyCode ();
 
-#ifndef DEBUG
-			// Debug code
+		#ifdef DEBUG
 			std::string outMessage;
 			if (keycodeEvent.IsPress ())
 				outMessage = "Key press: ";
 			if (keycodeEvent.IsRelease ())
 				outMessage = "Key release: ";
-
 			outMessage += keycode;
 			outMessage += "\n";
-
 			OutputDebugStringA (outMessage.c_str ());
-#endif // DEBUG
+		#endif // DEBUG
 
+		}
+
+		while (!m_Mouse.EventBufferIsEmpty ())
+		{
+			MouseEvent mouseEvent = m_Mouse.ReadEvent ();
+
+		#ifdef DEBUG
+			std::string outMessagge = "X: ";
+			outMessagge += std::to_string (mouseEvent.GetPosX ());
+			outMessagge += ", Y: ";
+			outMessagge += std::to_string (mouseEvent.GetPosY ());
+			outMessagge += "\n";
+			OutputDebugStringA (outMessagge.c_str ());
+		#endif // DEBUG
 		}
 	}
 }
