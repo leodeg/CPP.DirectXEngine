@@ -61,6 +61,11 @@ namespace DXEngine
 		this->m_EventBuffer.push (MouseEvent (MouseEvent::EventType::Move, x, y));
 	}
 
+	void Mouse::OnMouseMoveRaw (int x, int y)
+	{
+		this->m_EventBuffer.push (MouseEvent (MouseEvent::EventType::RAW_MOVE, x, y));
+	}
+
 	bool Mouse::IsLeftDown ()
 	{
 		return this->m_LeftIsDown;

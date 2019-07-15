@@ -2,6 +2,28 @@
 
 namespace DXEngine
 {
+	WindowContainer::WindowContainer ()
+	{
+		static bool rawInputInitialized = false;
+		if (!rawInputInitialized)
+		{
+			RAWINPUTDEVICE rawInputDevice;
+
+			rawInputDevice.usUsagePage = 0x01; // Mouse
+			rawInputDevice.usUsage = 0x02;
+			rawInputDevice.dwFlags = 0;
+			rawInputDevice.hwndTarget = NULL;
+
+			if (RegisterRawInputDevices (&rawInputDevice, 1, sizeof (rawInputDevice)) == FALSE)
+			{
+				ErrorLogger::Log (GetLastError (), "Failed to register raw input devices.");
+				exit (-1);
+			}
+
+			rawInputInitialized = true;
+		}
+	}
+
 	LRESULT WindowContainer::WindowProc (HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (uMsg)
@@ -125,6 +147,27 @@ namespace DXEngine
 					m_Mouse.OnWheelDown (x, y);
 
 				break;
+			}
+
+			case WM_INPUT:
+			{
+				UINT dataSize = NULL;
+				GetRawInputData (reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, NULL, &dataSize, sizeof (RAWINPUTHEADER));
+				if (dataSize > 0)
+				{
+					std::unique_ptr<BYTE[]> rawData = std::make_unique<BYTE[]> (dataSize);
+
+					if (GetRawInputData (reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawData.get (), &dataSize, sizeof (RAWINPUTHEADER)) == dataSize)
+					{
+						RAWINPUT * raw = reinterpret_cast<RAWINPUT *> (rawData.get ());
+						if (raw->header.dwType == RIM_TYPEMOUSE)
+						{
+							m_Mouse.OnMouseMoveRaw (raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+						}
+					}
+				}
+
+				return DefWindowProc (hwnd, uMsg, wParam, lParam);
 			}
 
 		#pragma endregion

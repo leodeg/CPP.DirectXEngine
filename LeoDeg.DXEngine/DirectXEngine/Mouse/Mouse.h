@@ -20,6 +20,7 @@ namespace DXEngine
 		void OnWheelDown (int x, int y);
 
 		void OnMouseMove (int x, int y);
+		void OnMouseMoveRaw (int x, int y);
 
 		bool IsLeftDown ();
 		bool IsRightDown ();
