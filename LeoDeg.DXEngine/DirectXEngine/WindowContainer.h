@@ -1,6 +1,7 @@
 #pragma once
 #include "RenderWindow.h"
 #include "Keyboard/KeyboardClass.h"
+#include "Graphics/Graphics.h"
 #include "Mouse/Mouse.h"
 #include <memory>
 
@@ -15,6 +16,7 @@ namespace DXEngine
 	protected:
 		RenderWindow m_RenderWindow;
 		KeyboardClass m_Keyboard;
+		Graphics m_Graphics;
 		Mouse m_Mouse;
 
 	private:

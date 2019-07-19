@@ -48,7 +48,7 @@ namespace DXEngine
 	{
 		MSG message;
 
-		if (PeekMessage (&message, this->m_Handle, 0, 0, PM_REMOVE))
+		while (PeekMessage (&message, this->m_Handle, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage (&message);
 			DispatchMessage (&message);
@@ -65,6 +65,12 @@ namespace DXEngine
 		}
 
 		return true;
+	}
+
+	HWND RenderWindow::GetHWND () const
+	{
+
+		return this->m_Handle;
 	}
 
 	RenderWindow::~RenderWindow () 

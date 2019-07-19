@@ -8,6 +8,7 @@ namespace DXEngine
 	public:
 		bool Initialize (HINSTANCE hInstance, std::string windowTitle, std::string windowClass, int width, int height);
 		bool ProcessMessages ();
+		void RenderFrame ();
 		void Update ();
 
 	protected:
