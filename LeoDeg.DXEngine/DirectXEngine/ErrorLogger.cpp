@@ -15,4 +15,11 @@ namespace DXEngine
 		std::wstring errorMessage = L"Error: " + StringConverter::StringToWide (message) + L"\n";
 		MessageBoxW (NULL, errorMessage.c_str (), L"Error", MB_ICONERROR);
 	}
+
+	void ErrorLogger::Log (HRESULT hr, std::wstring message)
+	{
+		_com_error error (hr);
+		std::wstring errorMessage = L"Error: " + message + L"\n";
+		MessageBoxW (NULL, errorMessage.c_str (), L"Error", MB_ICONERROR);
+	}
 }

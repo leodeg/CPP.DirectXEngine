@@ -31,6 +31,9 @@
     <Filter Include="Source Files\Graphics">
       <UniqueIdentifier>{6f6cf6f5-89e6-4c97-ba38-e9f865ec7be6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\Shaders">
+      <UniqueIdentifier>{fd5b34f8-4114-4002-baae-c987af1ce4f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -67,7 +70,10 @@
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\AdapterReader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\VertexShader.cpp">
+      <Filter>Source Files\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -101,8 +107,19 @@
     <ClInclude Include="Graphics\Graphics.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\AdapterReader.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Graphics\Vertex.h">
+      <Filter>Header Files\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\AdapterReader.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\VertexShader.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Graphics\Shaders\VertexShader.hlsl">
+      <Filter>Source Files\Graphics\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

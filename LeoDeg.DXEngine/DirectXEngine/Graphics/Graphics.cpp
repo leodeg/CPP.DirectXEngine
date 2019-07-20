@@ -6,6 +6,10 @@ namespace DXEngine
 	{
 		if (!InitializeDirectX (hwnd, width, height))
 			return false;
+
+		if (!InitializeShaders ())
+			return false;
+
 		return true;
 	}
 
@@ -89,6 +93,49 @@ namespace DXEngine
 
 
 		this->m_DeviceContext->OMSetRenderTargets (1, this->m_RenderTargetView.GetAddressOf (), NULL);
+
+		return true;
+	}
+
+	bool Graphics::InitializeShaders ()
+	{
+		std::wstring shaderFolder = L"";
+
+	#pragma region DetermineShaderPath
+		if (IsDebuggerPresent () == TRUE)
+		{
+		#ifdef _DEBUG
+			#ifdef _WIN64
+				shaderFolder = L"..\\x64\\Debug\\";
+			#else // x86
+				shaderFolder = L"..\\Debug\\";
+			#endif // _WIN64
+		#else // _RELEASE
+			#ifdef _WIN64
+				shaderFolder = L"..\\x64\\Release\\";
+			#else // x86
+				shaderFolder = L"..\\Release\\";
+			#endif
+		#endif
+		}
+	#pragma endregion DetermineShaderPath
+
+		if (!m_VertexShader.Initialize (this->m_Device, shaderFolder + L"vertexsahder.cso"))
+			return false;
+
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0,  }
+		};
+
+		UINT numOfElements = ARRAYSIZE (layout);
+		HRESULT hResult = this->m_Device->CreateInputLayout (layout, numOfElements, this->m_VertexShader.GetBuffer ()->GetBufferPointer (), m_VertexShader.GetBuffer ()->GetBufferSize (), this->m_InputLayout.GetAddressOf ());
+
+		if (FAILED (hResult))
+		{
+			ErrorLogger::Log (hResult, "Failed to create input layout view.");
+			return false;
+		}
 
 		return true;
 	}

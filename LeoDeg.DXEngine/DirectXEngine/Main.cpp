@@ -8,14 +8,14 @@ int APIENTRY wWinMain (_In_ HINSTANCE hInstance,
 	_In_ LPTSTR lpCMdLine,
 	_In_ int nCmdShow)
 {
-
 	DXEngine::Engine engine;
-	engine.Initialize (hInstance, "TestWindow", "TestWindowClass", 500, 500);
-
-	while (engine.ProcessMessages () == true)
+	if (engine.Initialize (hInstance, "TestWindow", "TestWindowClass", 500, 500))
 	{
-		engine.Update ();
-		engine.RenderFrame ();
+		while (engine.ProcessMessages () == true)
+		{
+			engine.Update ();
+			engine.RenderFrame ();
+		}
 	}
 
 	return 0;
