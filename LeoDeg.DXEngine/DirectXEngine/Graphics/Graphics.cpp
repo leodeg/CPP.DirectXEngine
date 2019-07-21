@@ -30,7 +30,7 @@ namespace DXEngine
 			return false;
 		}
 
-	#pragma region Swap chain data initialization
+	#pragma region Swap Chain Initialization
 
 		DXGI_SWAP_CHAIN_DESC swapChainDescription;
 		ZeroMemory (&swapChainDescription, sizeof (DXGI_SWAP_CHAIN_DESC));
@@ -53,7 +53,6 @@ namespace DXEngine
 		swapChainDescription.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 		swapChainDescription.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-	#pragma endregion
 
 		HRESULT hResult;
 		hResult = D3D11CreateDeviceAndSwapChain (adapters[0].m_pAdapter,
@@ -75,6 +74,10 @@ namespace DXEngine
 			return false;
 		}
 
+	#pragma endregion
+
+	#pragma region Back Buffer and Render Target View
+
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
 		hResult = this->m_SwapChain->GetBuffer (0, __uuidof (ID3D11Texture2D), reinterpret_cast<void **> (backBuffer.GetAddressOf ()));
 
@@ -93,6 +96,24 @@ namespace DXEngine
 
 
 		this->m_DeviceContext->OMSetRenderTargets (1, this->m_RenderTargetView.GetAddressOf (), NULL);
+
+	#pragma endregion
+
+	#pragma region Viewport
+
+		// Create a viewport
+		D3D11_VIEWPORT viewport;
+		ZeroMemory (&viewport, sizeof (D3D11_VIEWPORT));
+
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = static_cast<float>(width);
+		viewport.Height = static_cast<float>(height);
+
+		// Set viewport
+		this->m_DeviceContext->RSSetViewports (1, &viewport);
+
+	#pragma endregion
 
 		return true;
 	}
@@ -120,22 +141,18 @@ namespace DXEngine
 		}
 	#pragma endregion DetermineShaderPath
 
-		if (!m_VertexShader.Initialize (this->m_Device, shaderFolder + L"vertexsahder.cso"))
-			return false;
-
 		D3D11_INPUT_ELEMENT_DESC layout[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0,  }
 		};
 
-		UINT numOfElements = ARRAYSIZE (layout);
-		HRESULT hResult = this->m_Device->CreateInputLayout (layout, numOfElements, this->m_VertexShader.GetBuffer ()->GetBufferPointer (), m_VertexShader.GetBuffer ()->GetBufferSize (), this->m_InputLayout.GetAddressOf ());
-
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Failed to create input layout view.");
+		UINT layoutSize = ARRAYSIZE (layout);
+		
+		if (!m_VertexShader.Initialize (this->m_Device, shaderFolder + L"vertexshader.cso", layout, layoutSize))
 			return false;
-		}
+
+		if (!m_PixelShader.Initialize (this->m_Device, shaderFolder + L"pixelshader.cso"))
+			return false;
 
 		return true;
 	}
