@@ -1,6 +1,7 @@
 #pragma once
 #include "AdapterReader.h"
 #include "Shaders.h"
+#include "Vertex.h"
 
 namespace DXEngine
 {
@@ -13,6 +14,7 @@ namespace DXEngine
 	private:
 		bool InitializeDirectX (HWND hwnd, int width, int height);
 		bool InitializeShaders ();
+		bool InitializeScene ();
 
 
 		Microsoft::WRL::ComPtr<ID3D11Device>			m_Device; // it is used to create resources
@@ -22,5 +24,7 @@ namespace DXEngine
 
 		VertexShader m_VertexShader;
 		PixelShader m_PixelShader;
+
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
 	};
 }

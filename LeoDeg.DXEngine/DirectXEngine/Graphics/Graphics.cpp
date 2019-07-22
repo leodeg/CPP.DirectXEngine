@@ -10,13 +10,28 @@ namespace DXEngine
 		if (!InitializeShaders ())
 			return false;
 
+		if (!InitializeScene ())
+			return false;
+
 		return true;
 	}
 
 	void Graphics::RenderFrame ()
 	{
 		float bgColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+
 		this->m_DeviceContext->ClearRenderTargetView (this->m_RenderTargetView.Get (), bgColor);
+		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
+		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
+		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
+
+		UINT stride = sizeof (Vertex);
+		UINT offset = 0;
+		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), &stride, &offset);
+		this->m_DeviceContext->Draw (3, 0);
+
 		this->m_SwapChain->Present (1, NULL);
 	}
 
@@ -153,6 +168,39 @@ namespace DXEngine
 
 		if (!m_PixelShader.Initialize (this->m_Device, shaderFolder + L"pixelshader.cso"))
 			return false;
+
+		return true;
+	}
+	
+	bool Graphics::InitializeScene ()
+	{
+		Vertex vertexArray[] =
+		{
+			Vertex (0.0f, -0.1f), // Center
+			Vertex (-0.1f, 0.0f), // Left
+			Vertex (0.1f, 0.0f), // Right
+		};
+
+		D3D11_BUFFER_DESC vertexBufferDesc;
+		ZeroMemory (&vertexBufferDesc, sizeof (vertexBufferDesc));
+
+		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		vertexBufferDesc.ByteWidth = sizeof (Vertex) * ARRAYSIZE (vertexArray);
+		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		vertexBufferDesc.CPUAccessFlags = 0;
+		vertexBufferDesc.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA vertexBufferData;
+		ZeroMemory (&vertexBufferData, sizeof (vertexBufferData));
+		vertexBufferData.pSysMem = vertexArray;
+
+		HRESULT hResult = this->m_Device->CreateBuffer (&vertexBufferDesc, &vertexBufferData, this->m_VertexBuffer.GetAddressOf ());
+
+		if (FAILED (hResult))
+		{
+			ErrorLogger::Log (hResult, "Failed to create vertex buffer.");
+			return false;
+		}
 
 		return true;
 	}
