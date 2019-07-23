@@ -118,9 +118,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Graphics\Shaders\pixelshader.hlsl">
+    <FxCompile Include="pixelshader.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Graphics\Shaders\vertexshader.hlsl" />
+    <FxCompile Include="vertexshader.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

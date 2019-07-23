@@ -1,5 +1,6 @@
 #pragma once
 #include "WindowContainer.h"
+#include "ErrorLogger.h"
 
 namespace DXEngine
 {

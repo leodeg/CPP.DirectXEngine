@@ -5,13 +5,22 @@ namespace DXEngine
 	bool Graphics::Initialize (HWND hwnd, int width, int height)
 	{
 		if (!InitializeDirectX (hwnd, width, height))
+		{
+			ErrorLogger::Log (NULL, "Failed DirectX initialization.");
 			return false;
+		}
 
 		if (!InitializeShaders ())
+		{
+			ErrorLogger::Log (NULL, "Failed Shaders initialization.");
 			return false;
+		}
 
 		if (!InitializeScene ())
+		{
+			ErrorLogger::Log (NULL, "Failed Scene initialization.");
 			return false;
+		}
 
 		return true;
 	}
@@ -135,25 +144,27 @@ namespace DXEngine
 
 	bool Graphics::InitializeShaders ()
 	{
-		std::wstring shaderFolder = L"";
-
 	#pragma region DetermineShaderPath
+
+		std::wstring shaderfolder = L"";
+
 		if (IsDebuggerPresent () == TRUE)
 		{
-		#ifdef _DEBUG
-			#ifdef _WIN64
-				shaderFolder = L"..\\x64\\Debug\\";
-			#else // x86
-				shaderFolder = L"..\\Debug\\";
-			#endif // _WIN64
-		#else // _RELEASE
-			#ifdef _WIN64
-				shaderFolder = L"..\\x64\\Release\\";
-			#else // x86
-				shaderFolder = L"..\\Release\\";
-			#endif
+		#ifdef _DEBUG //Debug Mode
+		#ifdef _WIN64 //x64
+			shaderfolder = L"..\\x64\\Debug\\";
+		#else  //x86 (Win32)
+			shaderfolder = L"..\\Debug\\";
 		#endif
-		}
+		#else //Release Mode
+		#ifdef _WIN64 //x64
+			shaderfolder = L"..\\x64\\Release\\";
+		#else  //x86 (Win32)
+			shaderfolder = L"..\\Release\\";
+		#endif
+		#endif
+	}
+
 	#pragma endregion DetermineShaderPath
 
 		D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -161,13 +172,19 @@ namespace DXEngine
 			{ "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0,  }
 		};
 
-		UINT layoutSize = ARRAYSIZE (layout);
+		UINT numOfElements = ARRAYSIZE (layout);
 		
-		if (!m_VertexShader.Initialize (this->m_Device, shaderFolder + L"vertexshader.cso", layout, layoutSize))
+		if (!m_VertexShader.Initialize (this->m_Device, shaderfolder + L"vertexshader.cso", layout, numOfElements))
+		{
+			ErrorLogger::Log (NULL, "Failed Vertex Shader initialization");
 			return false;
+		}
 
-		if (!m_PixelShader.Initialize (this->m_Device, shaderFolder + L"pixelshader.cso"))
+		if (!m_PixelShader.Initialize (this->m_Device, shaderfolder + L"pixelshader.cso"))
+		{
+			ErrorLogger::Log (NULL, "Failed Pixel Shader initialization");
 			return false;
+		}
 
 		return true;
 	}

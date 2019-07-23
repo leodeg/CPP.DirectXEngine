@@ -31,11 +31,11 @@ namespace DXEngine
 
 		if (FAILED (hResult))
 		{
-			ErrorLogger::Log (hResult, "Failed to create input layout view.");
+			ErrorLogger::Log (hResult, "Failed to create input layout.");
 			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	ID3D11VertexShader * VertexShader::GetShader ()
@@ -79,7 +79,7 @@ namespace DXEngine
 			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	ID3D11PixelShader * PixelShader::GetShader ()
