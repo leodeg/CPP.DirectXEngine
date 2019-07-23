@@ -11,7 +11,7 @@ namespace DXEngine
 
 		if (FAILED (hr))
 		{
-			ErrorLogger::Log (hr, "Failed to Get Description for IDXGIAdapter");
+			ErrorLogger::Log (hr, "AdapterData::AdapterData:: Failed to Get Description for IDXGIAdapter");
 		}
 	}
 
@@ -28,7 +28,7 @@ namespace DXEngine
 
 		if (FAILED (hr))
 		{
-			ErrorLogger::Log (hr, "Failed to create DXGIFactory for enumerating adapters.");
+			ErrorLogger::Log (hr, "AdapterReader::GetAdapters:: Failed to create DXGIFactory for enumerating adapters.");
 			exit (-1);
 		}
 

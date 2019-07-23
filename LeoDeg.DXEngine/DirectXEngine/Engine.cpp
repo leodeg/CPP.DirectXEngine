@@ -7,13 +7,13 @@ namespace DXEngine
 	{
 		if (!this->m_RenderWindow.Initialize (this, hInstance, windowTitle, windowClass, width, height))
 		{
-			ErrorLogger::Log (NULL, "Failed render window initialization");
+			ErrorLogger::Log (NULL, "Engine::Initialize:: Failed render window initialization");
 			return false;
 		}
 
 		if (!m_Graphics.Initialize (this->m_RenderWindow.GetHWND (), width, height))
 		{
-			ErrorLogger::Log (NULL, "Failed graphics initialization");
+			ErrorLogger::Log (NULL, "Engine::Initialize:: Failed graphics initialization");
 			return false;
 		}
 	}

@@ -11,7 +11,7 @@ namespace DXEngine
 
 		if (FAILED (hResult))
 		{
-			std::wstring errorMessage = L"Failed to load shader: ";
+			std::wstring errorMessage = L"VertexShader::Initialize:: Failed to load shader: ";
 			errorMessage += shaderpath;
 			ErrorLogger::Log (hResult, errorMessage);
 			return false;
@@ -21,7 +21,7 @@ namespace DXEngine
 
 		if (FAILED (hResult))
 		{
-			std::wstring errorMessage = L"Failed to create vertex shader: ";
+			std::wstring errorMessage = L"VertexShader::Initialize:: Failed to create vertex shader: ";
 			errorMessage += shaderpath;
 			ErrorLogger::Log (hResult, errorMessage);
 			return false;
@@ -31,7 +31,7 @@ namespace DXEngine
 
 		if (FAILED (hResult))
 		{
-			ErrorLogger::Log (hResult, "Failed to create input layout.");
+			ErrorLogger::Log (hResult, "VertexShader::Initialize:: Failed to create input layout.");
 			return false;
 		}
 
@@ -63,7 +63,7 @@ namespace DXEngine
 
 		if (FAILED (hResult))
 		{
-			std::wstring errorMessage = L"Failed to load shader: ";
+			std::wstring errorMessage = L"PixelShader::Initialize:: Failed to load shader: ";
 			errorMessage += shaderpath;
 			ErrorLogger::Log (hResult, errorMessage);
 			return false;
@@ -73,7 +73,7 @@ namespace DXEngine
 
 		if (FAILED (hResult))
 		{
-			std::wstring errorMessage = L"Failed to create pixel shader: ";
+			std::wstring errorMessage = L"PixelShader::Initialize:: Failed to create pixel shader: ";
 			errorMessage += shaderpath;
 			ErrorLogger::Log (hResult, errorMessage);
 			return false;

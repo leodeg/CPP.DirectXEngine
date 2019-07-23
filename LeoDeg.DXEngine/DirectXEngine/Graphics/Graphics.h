@@ -26,5 +26,12 @@ namespace DXEngine
 		PixelShader m_PixelShader;
 
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer2;
+
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DepthStencilView;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilState;
+
+		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerState;
 	};
 }

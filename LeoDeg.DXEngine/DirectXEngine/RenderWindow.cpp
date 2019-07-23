@@ -33,7 +33,7 @@ namespace DXEngine
 
 		if (this->m_Handle == NULL)
 		{
-			ErrorLogger::Log (GetLastError (), "CreateWindowEX Failed for window: " + this->m_WindowTitle);
+			ErrorLogger::Log (GetLastError (), "RenderWindow::Initialize:: CreateWindowEX Failed for window: " + this->m_WindowTitle);
 			return false;
 		}
 
@@ -107,7 +107,7 @@ namespace DXEngine
 
 				if (pWindow == nullptr)
 				{
-					ErrorLogger::Log ("Critical Error: Pointer to window container is null during WM_NCCREATE.");
+					ErrorLogger::Log ("RenderWindow::HandleMessageSetup::Critical Error: Pointer to window container is null during WM_NCCREATE.");
 					exit (-1);
 				}
 
