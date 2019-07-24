@@ -37,7 +37,7 @@ namespace DXEngine
 		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		this->m_DeviceContext->RSSetState (this->m_RasterizerState.Get ());
 
-
+		this->m_DeviceContext->OMSetDepthStencilState (this->m_DepthStencilState.Get (), 0);
 		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
 		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
 
@@ -144,7 +144,7 @@ namespace DXEngine
 		depthStencilBufferDesc.ArraySize = 1;
 		depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		depthStencilBufferDesc.SampleDesc.Count = 1;
-		depthStencilBufferDesc.SampleDesc.Quality = 1;
+		depthStencilBufferDesc.SampleDesc.Quality = 0;
 		depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 		depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 		depthStencilBufferDesc.CPUAccessFlags = 0;
@@ -173,7 +173,7 @@ namespace DXEngine
 	#pragma region Depth Stencil State
 
 		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
-		ZeroMemory (&depthStencilBufferDesc, (sizeof (D3D11_DEPTH_STENCIL_DESC)));
+		ZeroMemory (&depthStencilStateDesc, (sizeof (D3D11_DEPTH_STENCIL_DESC)));
 
 		depthStencilStateDesc.DepthEnable = true;
 		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL;
@@ -283,9 +283,9 @@ namespace DXEngine
 
 		Vertex vertexArray[] =
 		{
-			Vertex (0.0f,  0.5f,  0.1f, 1.0f, 0.0f, 0.0f),		// TOP RED
+			Vertex (0.0f,  0.5f,  0.1f, 1.0f, 0.0f, 0.0f),	// TOP RED
 			Vertex (-0.5f, -0.5f, 0.1f, 1.0f, 0.0f, 0.0f),	// LEFT GREEN
-			Vertex (0.5f,  -0.5f, 0.1f, 1.0f, 0.0f, 0.0f),		// RIGHT BLUE
+			Vertex (0.5f,  -0.5f, 0.1f, 1.0f, 0.0f, 0.0f),	// RIGHT BLUE
 		};
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
@@ -315,7 +315,7 @@ namespace DXEngine
 
 		Vertex vertexArray2[] =
 		{
-			Vertex (0.0f,   0.25f,  0.0f, 0.0f, 1.0f, 0.0f),		// TOP RED
+			Vertex (0.0f,   0.25f,  0.0f, 0.0f, 1.0f, 0.0f),	// TOP RED
 			Vertex (-0.25f, -0.25f, 0.0f, 0.0f, 1.0f, 0.0f),	// LEFT GREEN
 			Vertex (0.25f,  -0.25f, 0.0f, 0.0f, 1.0f, 0.0f),	// RIGHT BLUE
 		};
