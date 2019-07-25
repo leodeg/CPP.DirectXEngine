@@ -35,26 +35,28 @@ namespace DXEngine
 
 		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
 		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		this->m_DeviceContext->RSSetState (this->m_RasterizerState.Get ());
 
+		this->m_DeviceContext->RSSetState (this->m_RasterizerState.Get ());
 		this->m_DeviceContext->OMSetDepthStencilState (this->m_DepthStencilState.Get (), 0);
+
+		this->m_DeviceContext->PSSetSamplers (0, 1, this->m_SamplerState.GetAddressOf ());
 		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
 		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
-
 
 		UINT stride = sizeof (Vertex);
 		UINT offset = 0;
 
-
+		this->m_DeviceContext->PSSetShaderResources (0, 1, this->m_Texture.GetAddressOf ());
 		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), &stride, &offset);
-		this->m_DeviceContext->Draw (3, 0);
+		this->m_DeviceContext->Draw (6, 0);
 
-
-		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer2.GetAddressOf (), &stride, &offset);
-		this->m_DeviceContext->Draw (3, 0);
+		m_SpriteBatch->Begin ();
+		m_SpriteFont->DrawString (m_SpriteBatch.get (), L"HELLO WORLD", DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
+		m_SpriteBatch->End ();
 
 		this->m_SwapChain->Present (1, NULL);
 	}
+
 
 	bool Graphics::InitializeDirectX (HWND hwnd, int width, int height)
 	{
@@ -215,12 +217,41 @@ namespace DXEngine
 		//rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
 		rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
 		rasterizerDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-		rasterizerDesc.FrontCounterClockwise = TRUE;
+		//rasterizerDesc.FrontCounterClockwise = TRUE;
 
 		hResult = this->m_Device->CreateRasterizerState (&rasterizerDesc, this->m_RasterizerState.GetAddressOf ());
 		if (FAILED(hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create rasterizer state.");
+			return false;
+		}
+
+	#pragma endregion
+
+	#pragma region Font Render
+
+		m_SpriteBatch = std::make_unique <DirectX::SpriteBatch> (this->m_DeviceContext.Get ());
+		m_SpriteFont = std::make_unique <DirectX::SpriteFont> (this->m_Device.Get (), L"Data\\Fonts\\comic_sans_ms_16.spritefont");
+
+	#pragma endregion
+
+	#pragma region Create Sampler State
+
+		D3D11_SAMPLER_DESC samplerDesc;
+		ZeroMemory (&samplerDesc, sizeof (samplerDesc));
+
+		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		samplerDesc.MinLOD = 0;
+		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+		hResult = this->m_Device->CreateSamplerState (&samplerDesc, this->m_SamplerState.GetAddressOf ());
+		if (FAILED (hResult))
+		{
+			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create sampler state.");
 			return false;
 		}
 
@@ -238,17 +269,20 @@ namespace DXEngine
 		if (IsDebuggerPresent () == TRUE)
 		{
 		#ifdef _DEBUG //Debug Mode
+
 		#ifdef _WIN64 //x64
 			shaderfolder = L"..\\x64\\Debug\\";
 		#else  //x86 (Win32)
 			shaderfolder = L"..\\Debug\\";
 		#endif
+		
 		#else //Release Mode
 		#ifdef _WIN64 //x64
 			shaderfolder = L"..\\x64\\Release\\";
 		#else  //x86 (Win32)
 			shaderfolder = L"..\\Release\\";
 		#endif
+
 		#endif
 	}
 
@@ -257,7 +291,7 @@ namespace DXEngine
 		D3D11_INPUT_ELEMENT_DESC layout[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0,  },
-			{ "COLOR", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
 		UINT numOfElements = ARRAYSIZE (layout);
@@ -279,13 +313,16 @@ namespace DXEngine
 	
 	bool Graphics::InitializeScene ()
 	{
-	#pragma region Vertex Buffer Array
-
+		// SQUARE
 		Vertex vertexArray[] =
 		{
-			Vertex (0.0f,  0.5f,  0.1f, 1.0f, 0.0f, 0.0f),	// TOP RED
-			Vertex (-0.5f, -0.5f, 0.1f, 1.0f, 0.0f, 0.0f),	// LEFT GREEN
-			Vertex (0.5f,  -0.5f, 0.1f, 1.0f, 0.0f, 0.0f),	// RIGHT BLUE
+			Vertex (-0.5f,  -0.5f, 1.0f, 0.0f, 1.0f), //Bottom Left 
+			Vertex (-0.5f,   0.5f, 1.0f, 0.0f, 0.0f), //Top Left
+			Vertex (0.5f,   0.5f, 1.0f, 1.0f, 0.0f), //Top Right
+
+			Vertex (-0.5f, -0.5f, 1.0f, 0.0f, 1.0f), //Bottom Left 
+			Vertex (0.5f,   0.5f, 1.0f, 1.0f, 0.0f), //Top Right
+			Vertex (0.5f,  -0.5f, 1.0f, 1.0f, 1.0f), //Bottom Right
 		};
 
 		D3D11_BUFFER_DESC vertexBufferDesc;
@@ -302,44 +339,19 @@ namespace DXEngine
 		vertexBufferData.pSysMem = vertexArray;
 
 		HRESULT hResult = this->m_Device->CreateBuffer (&vertexBufferDesc, &vertexBufferData, this->m_VertexBuffer.GetAddressOf ());
-
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create vertex buffer.");
 			return false;
 		}
 
-	#pragma endregion
-
-	#pragma region Vertex Buffer Array 2
-
-		Vertex vertexArray2[] =
-		{
-			Vertex (0.0f,   0.25f,  0.0f, 0.0f, 1.0f, 0.0f),	// TOP RED
-			Vertex (-0.25f, -0.25f, 0.0f, 0.0f, 1.0f, 0.0f),	// LEFT GREEN
-			Vertex (0.25f,  -0.25f, 0.0f, 0.0f, 1.0f, 0.0f),	// RIGHT BLUE
-		};
-
-		ZeroMemory (&vertexBufferDesc, sizeof (vertexBufferDesc));
-
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof (Vertex) * ARRAYSIZE (vertexArray2);
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		vertexBufferDesc.MiscFlags = 0;
-
-		ZeroMemory (&vertexBufferData, sizeof (vertexBufferData));
-		vertexBufferData.pSysMem = vertexArray2;
-
-		hResult = this->m_Device->CreateBuffer (&vertexBufferDesc, &vertexBufferData, this->m_VertexBuffer2.GetAddressOf ());
-
+		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_02.png", nullptr, m_Texture.GetAddressOf ());
+		
 		if (FAILED (hResult))
 		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create second vertex buffer.");
+			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create WIC texture from file.");
 			return false;
 		}
-
-	#pragma endregion
 
 		return true;
 	}

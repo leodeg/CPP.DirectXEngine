@@ -17,18 +17,29 @@ namespace DXEngine
 
 		this->RegisterWindowClass ();
 
-		this->m_Handle = CreateWindowEx (0,
-			this->m_WindowClassWide.c_str (),
-			this->m_WindowTitleWide.c_str (),
-			WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
-			0,
-			0,
-			this->m_Width,
-			this->m_Height,
-			NULL,
-			NULL,
-			this->m_hInstance,
-			pWindowContainer
+		int centerScreenX = GetSystemMetrics (SM_CXSCREEN) / 2 - this->m_Width / 2;
+		int centerScreenY = GetSystemMetrics (SM_CYSCREEN) / 2 - this->m_Height / 2;
+
+		RECT windowRectangle;
+		windowRectangle.top = centerScreenY;
+		windowRectangle.left = centerScreenX;
+		windowRectangle.right = windowRectangle.left + this->m_Width;
+		windowRectangle.bottom = windowRectangle.top + this->m_Height;
+		
+		AdjustWindowRect (&windowRectangle, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+
+		this->m_Handle = CreateWindowEx (0,   // Extended Windows style
+			this->m_WindowClassWide.c_str (), // Class name
+			this->m_WindowTitleWide.c_str (), // Window title
+			WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, // Windows style
+			windowRectangle.left, // Windows x position
+			windowRectangle.top, // Windows y position
+			windowRectangle.right - windowRectangle.left,  // Width
+			windowRectangle.bottom - windowRectangle.top, // Height
+			NULL, // Handle to parent
+			NULL, // Handle to menu or child
+			this->m_hInstance, // Handle to the instance of module to be used with this window
+			pWindowContainer   // 
 		);
 
 		if (this->m_Handle == NULL)

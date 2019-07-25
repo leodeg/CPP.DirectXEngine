@@ -7,6 +7,13 @@ int APIENTRY wWinMain (_In_ HINSTANCE hInstance,
 	_In_ LPTSTR lpCMdLine,
 	_In_ int nCmdShow)
 {
+	HRESULT hResult = CoInitialize (NULL);
+	if (FAILED (hResult))
+	{
+		DXEngine::ErrorLogger::Log (NULL, "Failed to call CoInitialize.");
+		return -1;
+	}
+
 	DXEngine::Engine engine;
 	if (engine.Initialize (hInstance, "TestWindow", "TestWindowClass", 800, 600))
 	{

@@ -36,12 +36,12 @@ namespace DXEngine
 		{
 			unsigned char ch = m_Keyboard.ReadChar ();
 
-		#ifdef DEBUG
-			std::string outMessage = "Char: ";
-			outMessage += ch;
-			outMessage += "\n";
-			OutputDebugStringA (outMessage.c_str ());
-		#endif // DEBUG
+		//#ifdef DEBUG
+		//	std::string outMessage = "Char: ";
+		//	outMessage += ch;
+		//	outMessage += "\n";
+		//	OutputDebugStringA (outMessage.c_str ());
+		//#endif // DEBUG
 		}
 
 		while (!m_Keyboard.KeyBufferIsEmpty ())
@@ -49,16 +49,16 @@ namespace DXEngine
 			KeyboardEvent keycodeEvent = m_Keyboard.ReadKey ();
 			unsigned char keycode = keycodeEvent.GetKeyCode ();
 
-		#ifdef DEBUG
-			std::string outMessage;
-			if (keycodeEvent.IsPress ())
-				outMessage = "Key press: ";
-			if (keycodeEvent.IsRelease ())
-				outMessage = "Key release: ";
-			outMessage += keycode;
-			outMessage += "\n";
-			OutputDebugStringA (outMessage.c_str ());
-		#endif // DEBUG
+		//#ifdef DEBUG
+		//	std::string outMessage;
+		//	if (keycodeEvent.IsPress ())
+		//		outMessage = "Key press: ";
+		//	if (keycodeEvent.IsRelease ())
+		//		outMessage = "Key release: ";
+		//	outMessage += keycode;
+		//	outMessage += "\n";
+		//	OutputDebugStringA (outMessage.c_str ());
+		//#endif // DEBUG
 
 		}
 
@@ -70,14 +70,14 @@ namespace DXEngine
 		{
 			MouseEvent mouseEvent = m_Mouse.ReadEvent ();
 
-		#ifdef DEBUG
-			std::string outMessagge = "X: ";
-			outMessagge += std::to_string (mouseEvent.GetPosX ());
-			outMessagge += ", Y: ";
-			outMessagge += std::to_string (mouseEvent.GetPosY ());
-			outMessagge += "\n";
-			OutputDebugStringA (outMessagge.c_str ());
-		#endif // DEBUG
+		//#ifdef DEBUG
+		//	std::string outMessagge = "X: ";
+		//	outMessagge += std::to_string (mouseEvent.GetPosX ());
+		//	outMessagge += ", Y: ";
+		//	outMessagge += std::to_string (mouseEvent.GetPosY ());
+		//	outMessagge += "\n";
+		//	OutputDebugStringA (outMessagge.c_str ());
+		//#endif // DEBUG
 		}
 
 	#pragma endregion
