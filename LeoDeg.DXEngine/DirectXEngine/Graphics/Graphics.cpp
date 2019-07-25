@@ -31,8 +31,7 @@ namespace DXEngine
 
 		this->m_DeviceContext->ClearRenderTargetView (this->m_RenderTargetView.Get (), bgColor);
 		this->m_DeviceContext->ClearDepthStencilView (this->m_DepthStencilView.Get (), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-
+		
 		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
 		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -48,7 +47,9 @@ namespace DXEngine
 
 		this->m_DeviceContext->PSSetShaderResources (0, 1, this->m_Texture.GetAddressOf ());
 		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), &stride, &offset);
-		this->m_DeviceContext->Draw (6, 0);
+		this->m_DeviceContext->IASetIndexBuffer (m_IndicesBuffer.Get (), DXGI_FORMAT_R32_UINT, 0);
+
+		this->m_DeviceContext->DrawIndexed (6, 0, 0);
 
 		m_SpriteBatch->Begin ();
 		m_SpriteFont->DrawString (m_SpriteBatch.get (), L"HELLO WORLD", DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
@@ -316,15 +317,19 @@ namespace DXEngine
 		// SQUARE
 		Vertex vertexArray[] =
 		{
-			Vertex (-0.5f,  -0.5f, 1.0f, 0.0f, 1.0f), //Bottom Left 
-			Vertex (-0.5f,   0.5f, 1.0f, 0.0f, 0.0f), //Top Left
-			Vertex (0.5f,   0.5f, 1.0f, 1.0f, 0.0f), //Top Right
-
-			Vertex (-0.5f, -0.5f, 1.0f, 0.0f, 1.0f), //Bottom Left 
-			Vertex (0.5f,   0.5f, 1.0f, 1.0f, 0.0f), //Top Right
-			Vertex (0.5f,  -0.5f, 1.0f, 1.0f, 1.0f), //Bottom Right
+			Vertex (-0.5f,  -0.5f, 1.0f, 0.0f, 1.0f), //Bottom Left		- [0]
+			Vertex (-0.5f,   0.5f, 1.0f, 0.0f, 0.0f), //Top Left		- [1]
+			Vertex (0.5f,   0.5f, 1.0f, 1.0f, 0.0f),  //Top Right		- [2]
+			Vertex (0.5f,  -0.5f, 1.0f, 1.0f, 1.0f),  //Bottom Right	- [3]
 		};
 
+		DWORD indices[] =
+		{
+			0, 1, 2,
+			0, 2, 3
+		};
+
+		// VERTEX BUFFER
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory (&vertexBufferDesc, sizeof (vertexBufferDesc));
 
@@ -342,6 +347,26 @@ namespace DXEngine
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create vertex buffer.");
+			return false;
+		}
+
+		// INDEX BUFFER
+		D3D11_BUFFER_DESC indexBufferDesc;
+		ZeroMemory (&indexBufferDesc, sizeof (indexBufferDesc));
+
+		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+		indexBufferDesc.ByteWidth = sizeof (DWORD) * ARRAYSIZE (indices);
+		indexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		indexBufferDesc.CPUAccessFlags = 0;
+		indexBufferDesc.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA indexBufferData;
+		indexBufferData.pSysMem = indices;
+
+		hResult = m_Device->CreateBuffer (&indexBufferDesc, &indexBufferData, m_IndicesBuffer.GetAddressOf ());
+		if (FAILED (hResult))
+		{
+			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create indices buffer.");
 			return false;
 		}
 
