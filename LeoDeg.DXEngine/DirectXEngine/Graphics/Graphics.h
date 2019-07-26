@@ -3,6 +3,7 @@
 #include "Shaders.h"
 #include "Vertex.h"
 #include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
@@ -32,8 +33,10 @@ namespace DXEngine
 		PixelShader m_PixelShader;
 
 		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
+		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_IndicesBuffer;
 		VertexBuffer<Vertex> m_VertexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> m_IndicesBuffer;
+		IndexBuffer m_IndexBuffer;
+
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DepthStencilView;

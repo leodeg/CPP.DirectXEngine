@@ -46,7 +46,7 @@ namespace DXEngine
 
 		this->m_DeviceContext->PSSetShaderResources (0, 1, this->m_Texture.GetAddressOf ());
 		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), m_VertexBuffer.GetStridePtr (), &offset);
-		this->m_DeviceContext->IASetIndexBuffer (m_IndicesBuffer.Get (), DXGI_FORMAT_R32_UINT, 0);
+		this->m_DeviceContext->IASetIndexBuffer (m_IndexBuffer.GetBuffer (), DXGI_FORMAT_R32_UINT, 0);
 
 		this->m_DeviceContext->DrawIndexed (6, 0, 0);
 
@@ -335,20 +335,8 @@ namespace DXEngine
 			return false;
 		}
 
-		// INDEX BUFFER
-		D3D11_BUFFER_DESC indexBufferDesc;
-		ZeroMemory (&indexBufferDesc, sizeof (indexBufferDesc));
 
-		indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		indexBufferDesc.ByteWidth = sizeof (DWORD) * ARRAYSIZE (indices);
-		indexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		indexBufferDesc.CPUAccessFlags = 0;
-		indexBufferDesc.MiscFlags = 0;
-
-		D3D11_SUBRESOURCE_DATA indexBufferData;
-		indexBufferData.pSysMem = indices;
-
-		hResult = m_Device->CreateBuffer (&indexBufferDesc, &indexBufferData, m_IndicesBuffer.GetAddressOf ());
+		hResult = this->m_IndexBuffer.Initilization (m_Device.Get (), indices, ARRAYSIZE(indices));
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create indices buffer.");
