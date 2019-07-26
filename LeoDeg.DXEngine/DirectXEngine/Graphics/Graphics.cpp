@@ -42,11 +42,10 @@ namespace DXEngine
 		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
 		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
 
-		UINT stride = sizeof (Vertex);
 		UINT offset = 0;
 
 		this->m_DeviceContext->PSSetShaderResources (0, 1, this->m_Texture.GetAddressOf ());
-		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), &stride, &offset);
+		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), m_VertexBuffer.GetStridePtr (), &offset);
 		this->m_DeviceContext->IASetIndexBuffer (m_IndicesBuffer.Get (), DXGI_FORMAT_R32_UINT, 0);
 
 		this->m_DeviceContext->DrawIndexed (6, 0, 0);
@@ -329,21 +328,7 @@ namespace DXEngine
 			0, 2, 3
 		};
 
-		// VERTEX BUFFER
-		D3D11_BUFFER_DESC vertexBufferDesc;
-		ZeroMemory (&vertexBufferDesc, sizeof (vertexBufferDesc));
-
-		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof (Vertex) * ARRAYSIZE (vertexArray);
-		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		vertexBufferDesc.CPUAccessFlags = 0;
-		vertexBufferDesc.MiscFlags = 0;
-
-		D3D11_SUBRESOURCE_DATA vertexBufferData;
-		ZeroMemory (&vertexBufferData, sizeof (vertexBufferData));
-		vertexBufferData.pSysMem = vertexArray;
-
-		HRESULT hResult = this->m_Device->CreateBuffer (&vertexBufferDesc, &vertexBufferData, this->m_VertexBuffer.GetAddressOf ());
+		HRESULT hResult = this->m_VertexBuffer.Initialize (this->m_Device.Get (), vertexArray, ARRAYSIZE(vertexArray));
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create vertex buffer.");
