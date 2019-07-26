@@ -2,8 +2,10 @@
 #include "AdapterReader.h"
 #include "Shaders.h"
 #include "Vertex.h"
+
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "ConstantBuffer.h"
 
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
@@ -36,6 +38,7 @@ namespace DXEngine
 		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_IndicesBuffer;
 		VertexBuffer<Vertex> m_VertexBuffer;
 		IndexBuffer m_IndexBuffer;
+		Microsoft::WRL::ComPtr<ID3D11Buffer> m_ConstantBuffer;
 
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
