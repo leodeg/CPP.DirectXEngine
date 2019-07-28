@@ -27,41 +27,43 @@ namespace DXEngine
 
 	void Graphics::RenderFrame ()
 	{
+		// Colors
 		float bgColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
 
+		// Clear frame
 		this->m_DeviceContext->ClearRenderTargetView (this->m_RenderTargetView.Get (), bgColor);
 		this->m_DeviceContext->ClearDepthStencilView (this->m_DepthStencilView.Get (), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-		
+
+		// Input-Assembler Stage
 		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
 		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		this->m_DeviceContext->RSSetState (this->m_RasterizerState.Get ());
 		this->m_DeviceContext->OMSetDepthStencilState (this->m_DepthStencilState.Get (), 0);
 
+		// Shader set stage
 		this->m_DeviceContext->PSSetSamplers (0, 1, this->m_SamplerState.GetAddressOf ());
 		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
 		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
 
 		UINT offset = 0;
 
+		// Constant Buffer
+		m_ConstantBuffer.m_Data.xOffset = 0.0f;
+		m_ConstantBuffer.m_Data.yOffset = 0.5f;
 
-		// Update constant buffer
-		CB_VS_vertexshader data;
-		data.xOffset = 0.0f;
-		data.yOffset = 0.5f;
-
-		D3D11_MAPPED_SUBRESOURCE mappedResource;
-		HRESULT hResult = this->m_DeviceContext->Map (m_ConstantBuffer.Get (), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-
-		CopyMemory (mappedResource.pData, &data, sizeof (CB_VS_vertexshader));
-		this->m_DeviceContext->Unmap (m_ConstantBuffer.Get (), 0);
+		if (!m_ConstantBuffer.ApplyChanges ())
+		{
+			return;
+		}
+		
 		this->m_DeviceContext->VSSetConstantBuffers (0, 1, m_ConstantBuffer.GetAddressOf ());
-
 
 		// Square
 		this->m_DeviceContext->PSSetShaderResources (0, 1, this->m_Texture.GetAddressOf ());
 		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), m_VertexBuffer.GetStridePtr (), &offset);
 
+		// Index buffer for square
 		this->m_DeviceContext->IASetIndexBuffer (m_IndexBuffer.GetBuffer (), DXGI_FORMAT_R32_UINT, 0);
 		this->m_DeviceContext->DrawIndexed (m_IndexBuffer.GetBufferSize (), 0, 0);
 
@@ -71,11 +73,10 @@ namespace DXEngine
 		m_SpriteFont->DrawString (m_SpriteBatch.get (), L"HELLO WORLD", DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
 		m_SpriteBatch->End ();
 
-
+		// Show rendered image to view
 		this->m_SwapChain->Present (1, NULL);
 	}
-
-
+	
 	bool Graphics::InitializeDirectX (HWND hwnd, int width, int height)
 	{
 		std::vector<AdapterData> adapters = AdapterReader::GetAdapters ();
@@ -340,6 +341,7 @@ namespace DXEngine
 			Vertex (0.5f,  -0.5f, 1.0f, 1.0f, 1.0f),  //Bottom Right	- [3]
 		};
 
+		// SQUARE INDICES
 		DWORD indices[] =
 		{
 			0, 1, 2,
@@ -347,6 +349,7 @@ namespace DXEngine
 		};
 
 
+		// VERTEX BUFFER
 		HRESULT hResult = this->m_VertexBuffer.Initialize (this->m_Device.Get (), vertexArray, ARRAYSIZE(vertexArray));
 		if (FAILED (hResult))
 		{
@@ -354,7 +357,7 @@ namespace DXEngine
 			return false;
 		}
 
-
+		// INDEX BUFFER
 		hResult = this->m_IndexBuffer.Initilization (m_Device.Get (), indices, ARRAYSIZE(indices));
 		if (FAILED (hResult))
 		{
@@ -362,26 +365,16 @@ namespace DXEngine
 			return false;
 		}
 
-
+		// LOAD TEXTURE
 		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_02.png", nullptr, m_Texture.GetAddressOf ());
-		
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create WIC texture from file.");
 			return false;
 		}
 
-
-		D3D11_BUFFER_DESC desc;
-		desc.Usage = D3D11_USAGE_DYNAMIC;
-		desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		desc.MiscFlags = 0;
-		desc.ByteWidth = static_cast<UINT> (sizeof (CB_VS_vertexshader) + (16 - (sizeof (CB_VS_vertexshader) % 16)));
-		desc.StructureByteStride = 0;
-
-
-		hResult = m_Device->CreateBuffer (&desc, 0, m_ConstantBuffer.GetAddressOf ());
+		// CONSTANT BUFFER
+		hResult = m_ConstantBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to initialize constant buffer.");

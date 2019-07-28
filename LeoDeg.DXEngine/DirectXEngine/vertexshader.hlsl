@@ -22,7 +22,7 @@ VS_OUTPUT main (VS_INPUT input)
     VS_OUTPUT output;
 
     input.inPos.x += xOffset;
-    input.inPos.y += yOffset;
+    input.inPos.y += yOffset - 0.5f;
 
     output.outPosition = float4(input.inPos, 1.0f);
     output.outTexCoord = input.inTexCoord;

@@ -5,6 +5,7 @@
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "ConstantBufferTypes.h"
 #include "ConstantBuffer.h"
 
 #include <SpriteBatch.h>
@@ -36,9 +37,9 @@ namespace DXEngine
 
 		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
 		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_IndicesBuffer;
+		ConstantBuffer<CB_VS_vertexshader> m_ConstantBuffer;
 		VertexBuffer<Vertex> m_VertexBuffer;
 		IndexBuffer m_IndexBuffer;
-		Microsoft::WRL::ComPtr<ID3D11Buffer> m_ConstantBuffer;
 
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
