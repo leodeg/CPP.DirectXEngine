@@ -49,14 +49,17 @@ namespace DXEngine
 		UINT offset = 0;
 
 		// Constant Buffer
-		m_ConstantBuffer.m_Data.xOffset = 0.0f;
-		m_ConstantBuffer.m_Data.yOffset = 0.5f;
+		//m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranslation (0.0f, -0.5f, 0.0f);
+		//m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixRotationRollPitchYaw (0.0f, 0.0f, DirectX::XM_PIDIV2);
+		m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixScaling (0.5f, 0.5f, 1.0f);
+		m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranspose (m_ConstantBuffer.m_Data.stateMatrix); // to column major format
+
 
 		if (!m_ConstantBuffer.ApplyChanges ())
 		{
 			return;
 		}
-		
+
 		this->m_DeviceContext->VSSetConstantBuffers (0, 1, m_ConstantBuffer.GetAddressOf ());
 
 		// Square
@@ -70,13 +73,13 @@ namespace DXEngine
 
 		// Draw text
 		m_SpriteBatch->Begin ();
-		m_SpriteFont->DrawString (m_SpriteBatch.get (), L"HELLO WORLD", DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2(0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
+		m_SpriteFont->DrawString (m_SpriteBatch.get (), L"HELLO WORLD", DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2 (0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
 		m_SpriteBatch->End ();
 
 		// Show rendered image to view
 		this->m_SwapChain->Present (1, NULL);
 	}
-	
+
 	bool Graphics::InitializeDirectX (HWND hwnd, int width, int height)
 	{
 		std::vector<AdapterData> adapters = AdapterReader::GetAdapters ();
@@ -157,7 +160,7 @@ namespace DXEngine
 	#pragma endregion
 
 	#pragma region Depth Stencil Buffer
-		
+
 		D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
 		depthStencilBufferDesc.Width = width;
 		depthStencilBufferDesc.Height = height;
@@ -207,7 +210,7 @@ namespace DXEngine
 			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create depth stencil state.");
 			return false;
 		}
-		
+
 	#pragma endregion
 
 	#pragma region Viewport
@@ -239,7 +242,7 @@ namespace DXEngine
 		//rasterizerDesc.FrontCounterClockwise = TRUE;
 
 		hResult = this->m_Device->CreateRasterizerState (&rasterizerDesc, this->m_RasterizerState.GetAddressOf ());
-		if (FAILED(hResult))
+		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create rasterizer state.");
 			return false;
@@ -294,7 +297,7 @@ namespace DXEngine
 		#else  //x86 (Win32)
 			shaderfolder = L"..\\Debug\\";
 		#endif
-		
+
 		#else //Release Mode
 		#ifdef _WIN64 //x64
 			shaderfolder = L"..\\x64\\Release\\";
@@ -314,7 +317,7 @@ namespace DXEngine
 		};
 
 		UINT numOfElements = ARRAYSIZE (layout);
-		
+
 		if (!m_VertexShader.Initialize (this->m_Device, shaderfolder + L"vertexshader.cso", layout, numOfElements))
 		{
 			ErrorLogger::Log (NULL, "Graphics::InitializeShaders:: Failed Vertex Shader initialization");
@@ -328,8 +331,8 @@ namespace DXEngine
 		}
 
 		return true;
-	}
-	
+}
+
 	bool Graphics::InitializeScene ()
 	{
 		// SQUARE
@@ -350,7 +353,7 @@ namespace DXEngine
 
 
 		// VERTEX BUFFER
-		HRESULT hResult = this->m_VertexBuffer.Initialize (this->m_Device.Get (), vertexArray, ARRAYSIZE(vertexArray));
+		HRESULT hResult = this->m_VertexBuffer.Initialize (this->m_Device.Get (), vertexArray, ARRAYSIZE (vertexArray));
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create vertex buffer.");
@@ -358,7 +361,7 @@ namespace DXEngine
 		}
 
 		// INDEX BUFFER
-		hResult = this->m_IndexBuffer.Initilization (m_Device.Get (), indices, ARRAYSIZE(indices));
+		hResult = this->m_IndexBuffer.Initilization (m_Device.Get (), indices, ARRAYSIZE (indices));
 		if (FAILED (hResult))
 		{
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create indices buffer.");
