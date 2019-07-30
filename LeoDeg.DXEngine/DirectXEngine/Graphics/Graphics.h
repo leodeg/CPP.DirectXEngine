@@ -2,6 +2,7 @@
 #include "AdapterReader.h"
 #include "Shaders.h"
 #include "Vertex.h"
+#include "Camera.h"
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -29,6 +30,8 @@ namespace DXEngine
 	private:
 		int m_WindowWidth = 0;
 		int m_WindowHeight = 0;
+
+		Camera m_Camera;
 
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // it is used to create resources
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext; // generates rendering commands

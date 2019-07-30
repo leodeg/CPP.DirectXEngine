@@ -154,6 +154,7 @@
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="ErrorLogger.cpp" />
     <ClCompile Include="Graphics\AdapterReader.cpp" />
+    <ClCompile Include="Graphics\Camera.cpp" />
     <ClCompile Include="Graphics\Graphics.cpp" />
     <ClCompile Include="Graphics\Shaders.cpp" />
     <ClCompile Include="Keyboard\KeyboardClass.cpp" />
@@ -166,6 +167,7 @@
     <ClCompile Include="WindowContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Graphics\Camera.h" />
     <ClInclude Include="Graphics\ConstantBuffer.h" />
     <ClInclude Include="Graphics\ConstantBufferTypes.h" />
     <ClInclude Include="Engine.h" />

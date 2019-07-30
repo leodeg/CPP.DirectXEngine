@@ -53,26 +53,9 @@ namespace DXEngine
 
 		// Constant Buffer
 		DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity ();
-		static DirectX::XMVECTOR eyePos = DirectX::XMVectorSet (0.0f, 0.0f, -2.0f, 0.0f);
-		static DirectX::XMVECTOR lookAtPos = DirectX::XMVectorSet (0.0f, 0.0f, 0.0f, 0.0f); // Center of the world
-		static DirectX::XMVECTOR upVector = DirectX::XMVectorSet (0.0f, 1.0f, 0.0f, 0.0f);
-		
-		// Additional values to eye position
-		DirectX::XMFLOAT3 eyePosFloat3;
-		DirectX::XMStoreFloat3 (&eyePosFloat3, eyePos);
-		eyePosFloat3.y += 0.01f;
-		eyePos = DirectX::XMLoadFloat3 (&eyePosFloat3);
-
-		DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH (eyePos, lookAtPos, upVector);
-		float fovDegrees = 90.f;
-		float fovRadians = (fovDegrees / 360.0f) * DirectX::XM_2PI;
-		float aspectRatio = static_cast <float> (this->m_WindowWidth) / static_cast <float> (this->m_WindowHeight);
-		float minZView = 0.1f;
-		float maxZView = 1000.0f;
-
-		DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH (fovDegrees, aspectRatio, minZView, maxZView);
+		m_Camera.AdjustPosition (0.0f, 0.005f, 0.0f);
 			
-		m_ConstantBuffer.m_Data.stateMatrix = worldMatrix * viewMatrix;
+		m_ConstantBuffer.m_Data.stateMatrix = worldMatrix * m_Camera.GetViewMatrix () * m_Camera.GetProjectionMatrix ();
 		m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranspose (m_ConstantBuffer.m_Data.stateMatrix); // to column major format
 
 
@@ -404,6 +387,9 @@ namespace DXEngine
 			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to initialize constant buffer.");
 			return false;
 		}
+
+		m_Camera.SetPosition (0.0f, 0.0f, -2.0f);
+		m_Camera.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
 
 		return true;
 	}
