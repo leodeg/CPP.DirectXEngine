@@ -22,10 +22,13 @@ namespace DXEngine
 		void RenderFrame ();
 
 	private:
-		bool InitializeDirectX (HWND hwnd, int width, int height);
+		bool InitializeDirectX (HWND hwnd);
 		bool InitializeShaders ();
 		bool InitializeScene ();
 
+	private:
+		int m_WindowWidth = 0;
+		int m_WindowHeight = 0;
 
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // it is used to create resources
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext; // generates rendering commands
@@ -35,8 +38,6 @@ namespace DXEngine
 		VertexShader m_VertexShader;
 		PixelShader m_PixelShader;
 
-		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_VertexBuffer;
-		//Microsoft::WRL::ComPtr<ID3D11Buffer> m_IndicesBuffer;
 		ConstantBuffer<CB_VS_vertexshader> m_ConstantBuffer;
 		VertexBuffer<Vertex> m_VertexBuffer;
 		IndexBuffer m_IndexBuffer;

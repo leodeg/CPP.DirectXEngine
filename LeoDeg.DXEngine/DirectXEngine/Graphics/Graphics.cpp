@@ -4,7 +4,10 @@ namespace DXEngine
 {
 	bool Graphics::Initialize (HWND hwnd, int width, int height)
 	{
-		if (!InitializeDirectX (hwnd, width, height))
+		this->m_WindowWidth = width;
+		this->m_WindowHeight = height;
+
+		if (!InitializeDirectX (hwnd))
 		{
 			ErrorLogger::Log (NULL, "Graphics::Initialize:: Failed DirectX initialization.");
 			return false;
@@ -49,9 +52,27 @@ namespace DXEngine
 		UINT offset = 0;
 
 		// Constant Buffer
-		//m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranslation (0.0f, -0.5f, 0.0f);
-		//m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixRotationRollPitchYaw (0.0f, 0.0f, DirectX::XM_PIDIV2);
-		m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixScaling (0.5f, 0.5f, 1.0f);
+		DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity ();
+		static DirectX::XMVECTOR eyePos = DirectX::XMVectorSet (0.0f, 0.0f, -2.0f, 0.0f);
+		static DirectX::XMVECTOR lookAtPos = DirectX::XMVectorSet (0.0f, 0.0f, 0.0f, 0.0f); // Center of the world
+		static DirectX::XMVECTOR upVector = DirectX::XMVectorSet (0.0f, 1.0f, 0.0f, 0.0f);
+		
+		// Additional values to eye position
+		DirectX::XMFLOAT3 eyePosFloat3;
+		DirectX::XMStoreFloat3 (&eyePosFloat3, eyePos);
+		eyePosFloat3.y += 0.01f;
+		eyePos = DirectX::XMLoadFloat3 (&eyePosFloat3);
+
+		DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH (eyePos, lookAtPos, upVector);
+		float fovDegrees = 90.f;
+		float fovRadians = (fovDegrees / 360.0f) * DirectX::XM_2PI;
+		float aspectRatio = static_cast <float> (this->m_WindowWidth) / static_cast <float> (this->m_WindowHeight);
+		float minZView = 0.1f;
+		float maxZView = 1000.0f;
+
+		DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH (fovDegrees, aspectRatio, minZView, maxZView);
+			
+		m_ConstantBuffer.m_Data.stateMatrix = worldMatrix * viewMatrix;
 		m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranspose (m_ConstantBuffer.m_Data.stateMatrix); // to column major format
 
 
@@ -80,7 +101,7 @@ namespace DXEngine
 		this->m_SwapChain->Present (1, NULL);
 	}
 
-	bool Graphics::InitializeDirectX (HWND hwnd, int width, int height)
+	bool Graphics::InitializeDirectX (HWND hwnd)
 	{
 		std::vector<AdapterData> adapters = AdapterReader::GetAdapters ();
 
@@ -95,8 +116,8 @@ namespace DXEngine
 		DXGI_SWAP_CHAIN_DESC swapChainDescription;
 		ZeroMemory (&swapChainDescription, sizeof (DXGI_SWAP_CHAIN_DESC));
 
-		swapChainDescription.BufferDesc.Width = width;
-		swapChainDescription.BufferDesc.Height = height;
+		swapChainDescription.BufferDesc.Width = this->m_WindowWidth;
+		swapChainDescription.BufferDesc.Height = this->m_WindowHeight;
 		swapChainDescription.BufferDesc.RefreshRate.Numerator = 60;
 		swapChainDescription.BufferDesc.RefreshRate.Denominator = 1;
 		swapChainDescription.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -162,8 +183,8 @@ namespace DXEngine
 	#pragma region Depth Stencil Buffer
 
 		D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
-		depthStencilBufferDesc.Width = width;
-		depthStencilBufferDesc.Height = height;
+		depthStencilBufferDesc.Width = this->m_WindowWidth;
+		depthStencilBufferDesc.Height = this->m_WindowHeight;
 		depthStencilBufferDesc.MipLevels = 1;
 		depthStencilBufferDesc.ArraySize = 1;
 		depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -221,8 +242,8 @@ namespace DXEngine
 
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
-		viewport.Width = static_cast<float>(width);
-		viewport.Height = static_cast<float>(height);
+		viewport.Width = static_cast<float>(this->m_WindowWidth);
+		viewport.Height = static_cast<float>(this->m_WindowHeight);
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 
@@ -338,10 +359,10 @@ namespace DXEngine
 		// SQUARE
 		Vertex vertexArray[] =
 		{
-			Vertex (-0.5f,  -0.5f, 1.0f, 0.0f, 1.0f), //Bottom Left		- [0]
-			Vertex (-0.5f,   0.5f, 1.0f, 0.0f, 0.0f), //Top Left		- [1]
-			Vertex (0.5f,   0.5f, 1.0f, 1.0f, 0.0f),  //Top Right		- [2]
-			Vertex (0.5f,  -0.5f, 1.0f, 1.0f, 1.0f),  //Bottom Right	- [3]
+			Vertex (-0.5f, -0.5f, 0.0f, 0.0f, 1.0f), //Bottom Left		- [0]
+			Vertex (-0.5f,  0.5f, 0.0f, 0.0f, 0.0f), //Top Left		- [1]
+			Vertex ( 0.5f,  0.5f, 0.0f, 1.0f, 0.0f),  //Top Right		- [2]
+			Vertex ( 0.5f, -0.5f, 0.0f, 1.0f, 1.0f),  //Bottom Right	- [3]
 		};
 
 		// SQUARE INDICES
