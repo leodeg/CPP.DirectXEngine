@@ -13,14 +13,27 @@ namespace DXEngine
 
 	void Camera::UpdateViewMatrix ()
 	{
+		// Calculate camera rotation matrix
 		XMMATRIX cameraRotationMat = XMMatrixRotationRollPitchYaw (this->m_Rot.x, this->m_Rot.y, this->m_Rot.z);
-
-		XMVECTOR cameraTarget = XMVector3TransformCoord (this->DEFAULT_FORWARD_VECTOR, cameraRotationMat);
+		// Calculate unit Vector of camera target based off camera forward value transformed by camera rotation
+		XMVECTOR cameraTarget = XMVector3TransformCoord (this->VECTOR_FORWARD, cameraRotationMat);
+		// Adjust camera target to be offset by the camera's current position
 		cameraTarget += this->m_PosVector;
-
-		XMVECTOR upDirection = XMVector3TransformCoord (this->DEFAULT_UP_VECTOR, cameraRotationMat);
-
+		// Calculate up direction based on current rotation
+		XMVECTOR upDirection = XMVector3TransformCoord (this->VECTOR_UP, cameraRotationMat);
+		// Calculate view direction
 		this->m_ViewMatrix = XMMatrixLookAtLH (this->m_PosVector, cameraTarget, upDirection);
+
+		// Calculate rotation matrix (pitch, yaw)
+		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (0.0f, this->m_Rot.y, this->m_Rot.z);
+
+		// Calculate vectors about the camera
+		this->m_VectorUp = XMVector3TransformCoord (this->VECTOR_UP, vecRotationMatrix);
+		this->m_VectorDown = XMVector3TransformCoord (this->VECTOR_DOWN, vecRotationMatrix);
+		this->m_VectorLeft = XMVector3TransformCoord (this->VECTOR_LEFT, vecRotationMatrix);
+		this->m_VectorRight = XMVector3TransformCoord (this->VECTOR_RIGHT, vecRotationMatrix);
+		this->m_VectorForward = XMVector3TransformCoord (this->VECTOR_FORWARD, vecRotationMatrix);
+		this->m_VectorBackward = XMVector3TransformCoord (this->VECTOR_BACKWARD, vecRotationMatrix);
 	}
 
 	void Camera::SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ)
@@ -28,6 +41,8 @@ namespace DXEngine
 		float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
 		this->m_ProjectionMatrix = XMMatrixPerspectiveFovLH (fovRadians, aspectRation, nearZ, farZ);
 	}
+
+#pragma region CAMERA PROPERTIES
 
 	void Camera::SetLookAt (float x, float y, float z)
 	{
@@ -37,9 +52,7 @@ namespace DXEngine
 	void Camera::SetLookAt (XMFLOAT3 position)
 	{
 		// If the same position
-		if (position.x == this->m_Pos.x
-			&& position.y == this->m_Pos.y
-			&& position.z == this->m_Pos.z)
+		if (position.x == this->m_Pos.x && position.y == this->m_Pos.y && position.z == this->m_Pos.z)
 		{
 			return;
 		}
@@ -59,21 +72,33 @@ namespace DXEngine
 
 		// Calculate yaw
 		float yaw = 0.0f;
-		if (position.x != 0.0f)
-		{
-			yaw = atan (position.x / position.z);
-		}
-
-		if (position.z > 0)
-		{
-			yaw += XM_PI;
-		}
-
-		// Calculate roll
-
+		if (position.x != 0.0f) yaw = atan (position.x / position.z);
+		if (position.z > 0) yaw += XM_PI;
 
 		this->SetRotation (pitch, yaw, 0.0f);
 	}
+
+	void Camera::SetCameraMoveSpeed (float speed)
+	{
+		this->m_CameraMoveSpeed = speed;
+	}
+
+	float Camera::GetCameraMoveSpeed () const
+	{
+		return this->m_CameraMoveSpeed;
+	}
+
+	void Camera::SetCameraRotationSpeed (float speed)
+	{
+		this->m_CameraRotationSpeed = speed;
+	}
+
+	float Camera::GetCameraRotationSpeed () const
+	{
+		return this->m_CameraRotationSpeed;
+	}
+
+#pragma endregion
 
 #pragma region GETTERS
 
@@ -97,7 +122,7 @@ namespace DXEngine
 		return this->m_Pos;
 	}
 
-	const XMVECTOR & Camera::GetpRotationVector () const
+	const XMVECTOR & Camera::GetRotationVector () const
 	{
 		return this->m_RotVector;
 	}
@@ -105,6 +130,36 @@ namespace DXEngine
 	const XMFLOAT3 & Camera::GetRotationFloat3 () const
 	{
 		return this->m_Rot;
+	}
+
+	const XMVECTOR & Camera::GetUpVector () const
+	{
+		return this->m_VectorUp;
+	}
+
+	const XMVECTOR & Camera::GetDownVector () const
+	{
+		return this->m_VectorDown;
+	}
+
+	const XMVECTOR & Camera::GetForwardVector () const
+	{
+		return this->m_VectorForward;
+	}
+
+	const XMVECTOR & Camera::GetRightVector () const
+	{
+		return this->m_VectorRight;
+	}
+
+	const XMVECTOR & Camera::GetLeftVector () const
+	{
+		return this->m_VectorLeft;
+	}
+
+	const XMVECTOR & Camera::GetBackwardVector () const
+	{
+		return this->m_VectorBackward;
 	}
 
 #pragma endregion

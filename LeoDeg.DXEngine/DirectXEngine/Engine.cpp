@@ -35,31 +35,12 @@ namespace DXEngine
 		while (!m_Keyboard.CharBufferIsEmpty ())
 		{
 			unsigned char ch = m_Keyboard.ReadChar ();
-
-		//#ifdef DEBUG
-		//	std::string outMessage = "Char: ";
-		//	outMessage += ch;
-		//	outMessage += "\n";
-		//	OutputDebugStringA (outMessage.c_str ());
-		//#endif // DEBUG
 		}
 
 		while (!m_Keyboard.KeyBufferIsEmpty ())
 		{
 			KeyboardEvent keycodeEvent = m_Keyboard.ReadKey ();
 			unsigned char keycode = keycodeEvent.GetKeyCode ();
-
-		//#ifdef DEBUG
-		//	std::string outMessage;
-		//	if (keycodeEvent.IsPress ())
-		//		outMessage = "Key press: ";
-		//	if (keycodeEvent.IsRelease ())
-		//		outMessage = "Key release: ";
-		//	outMessage += keycode;
-		//	outMessage += "\n";
-		//	OutputDebugStringA (outMessage.c_str ());
-		//#endif // DEBUG
-
 		}
 
 	#pragma endregion
@@ -69,15 +50,53 @@ namespace DXEngine
 		while (!m_Mouse.EventBufferIsEmpty ())
 		{
 			MouseEvent mouseEvent = m_Mouse.ReadEvent ();
+			if (mouseEvent.GetType () == MouseEvent::EventType::RAW_MOVE)
+			{
+				this->m_Graphics.m_Camera.AdjustRotation 
+				(
+					static_cast<float>(mouseEvent.GetPosY ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+					static_cast<float>(mouseEvent.GetPosX ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+					0.0f
+				);
+			}
+		}
 
-		//#ifdef DEBUG
-		//	std::string outMessagge = "X: ";
-		//	outMessagge += std::to_string (mouseEvent.GetPosX ());
-		//	outMessagge += ", Y: ";
-		//	outMessagge += std::to_string (mouseEvent.GetPosY ());
-		//	outMessagge += "\n";
-		//	OutputDebugStringA (outMessagge.c_str ());
-		//#endif // DEBUG
+	#pragma endregion
+
+	#pragma region Move Camera
+
+		if (m_Keyboard.KeyIsPressed (VK_SPACE))
+		{
+			this->m_Graphics.m_Camera.AdjustPosition (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed (), 0.0f);
+		}
+
+		if (m_Keyboard.KeyIsPressed ('Z'))
+		{
+			this->m_Graphics.m_Camera.AdjustPosition (0.0f, -this->m_Graphics.m_Camera.GetCameraMoveSpeed (), 0.0f);
+		}
+
+		if (m_Keyboard.KeyIsPressed ('A'))
+		{
+			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetLeftVector () 
+				* this->m_Graphics.m_Camera.GetCameraMoveSpeed ());
+		}
+
+		if (m_Keyboard.KeyIsPressed ('D'))
+		{
+			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetRightVector () 
+				* this->m_Graphics.m_Camera.GetCameraMoveSpeed ());
+		}
+		
+		if (m_Keyboard.KeyIsPressed ('W'))
+		{
+			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetForwardVector () 
+				* this->m_Graphics.m_Camera.GetCameraMoveSpeed ());
+		}
+
+		if (m_Keyboard.KeyIsPressed ('S'))
+		{
+			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetBackwardVector () 
+				* this->m_Graphics.m_Camera.GetCameraMoveSpeed ());
 		}
 
 	#pragma endregion

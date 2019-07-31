@@ -22,6 +22,8 @@ namespace DXEngine
 		bool Initialize (HWND hwnd, int width, int height);
 		void RenderFrame ();
 
+		Camera m_Camera;
+
 	private:
 		bool InitializeDirectX (HWND hwnd);
 		bool InitializeShaders ();
@@ -31,7 +33,6 @@ namespace DXEngine
 		int m_WindowWidth = 0;
 		int m_WindowHeight = 0;
 
-		Camera m_Camera;
 
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // it is used to create resources
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext; // generates rendering commands
