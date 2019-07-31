@@ -53,8 +53,8 @@ namespace DXEngine
 
 		// Constant Buffer
 		DirectX::XMMATRIX worldMatrix = DirectX::XMMatrixIdentity ();
-		m_Camera.AdjustPosition (0.0f, 0.005f, 0.0f);
-			
+		m_Camera.AdjustPosition (0.005f, 0.005f, 0.0f);
+		m_Camera.SetLookAt (0.0f, 0.0f, 0.0f);
 		m_ConstantBuffer.m_Data.stateMatrix = worldMatrix * m_Camera.GetViewMatrix () * m_Camera.GetProjectionMatrix ();
 		m_ConstantBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranspose (m_ConstantBuffer.m_Data.stateMatrix); // to column major format
 

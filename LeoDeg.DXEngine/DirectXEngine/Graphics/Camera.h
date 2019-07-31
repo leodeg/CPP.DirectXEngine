@@ -9,12 +9,15 @@ namespace DXEngine
 	public:
 		Camera ();
 		void SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ);
+		void SetLookAt (float x, float y, float z);
+		void SetLookAt (XMFLOAT3 position);
 
 		const XMMATRIX & GetViewMatrix () const;
 		const XMMATRIX & GetProjectionMatrix () const;
 
 		const XMVECTOR & GetPositionVector () const;
 		const XMFLOAT3 & GetPositionFloat3 () const;
+
 		const XMVECTOR & GetpRotationVector () const;
 		const XMFLOAT3 & GetRotationFloat3 () const;
 

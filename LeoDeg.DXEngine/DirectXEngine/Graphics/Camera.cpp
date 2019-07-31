@@ -6,10 +6,8 @@ namespace DXEngine
 	{
 		this->m_Pos = XMFLOAT3 (0.0f, 0.0f, 0.0f);
 		this->m_Rot = XMFLOAT3 (0.0f, 0.0f, 0.0f);
-
 		this->m_PosVector = XMLoadFloat3 (&this->m_Pos);
 		this->m_RotVector = XMLoadFloat3 (&this->m_Rot);
-
 		this->UpdateViewMatrix ();
 	}
 
@@ -29,6 +27,52 @@ namespace DXEngine
 	{
 		float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
 		this->m_ProjectionMatrix = XMMatrixPerspectiveFovLH (fovRadians, aspectRation, nearZ, farZ);
+	}
+
+	void Camera::SetLookAt (float x, float y, float z)
+	{
+		this->SetLookAt (XMFLOAT3 (x, y, z));
+	}
+
+	void Camera::SetLookAt (XMFLOAT3 position)
+	{
+		// If the same position
+		if (position.x == this->m_Pos.x
+			&& position.y == this->m_Pos.y
+			&& position.z == this->m_Pos.z)
+		{
+			return;
+		}
+
+		// Calculate direction
+		position.x = this->m_Pos.x - position.x;
+		position.y = this->m_Pos.y - position.y;
+		position.z = this->m_Pos.z - position.z;
+
+		// Calculate pitch rotation
+		float pitch = 0.0f;
+		if (position.y != 0.0f)
+		{
+			const float distance = static_cast<float>(sqrt (pow (position.x, 2) + pow (position.z, 2)));
+			pitch = static_cast<float>(atan (position.y / distance));
+		}
+
+		// Calculate yaw
+		float yaw = 0.0f;
+		if (position.x != 0.0f)
+		{
+			yaw = atan (position.x / position.z);
+		}
+
+		if (position.z > 0)
+		{
+			yaw += XM_PI;
+		}
+
+		// Calculate roll
+
+
+		this->SetRotation (pitch, yaw, 0.0f);
 	}
 
 #pragma region GETTERS
