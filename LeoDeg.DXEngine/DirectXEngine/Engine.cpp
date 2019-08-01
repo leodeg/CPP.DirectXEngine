@@ -45,7 +45,7 @@ namespace DXEngine
 
 	void Engine::UpdateDeltaTime ()
 	{
-		m_DeltaTime = m_Timer.GetMilisecondsElapsed ();
+		m_DeltaTime = static_cast<float>(m_Timer.GetMilisecondsElapsed ());
 		m_Timer.Restart ();
 	}
 
