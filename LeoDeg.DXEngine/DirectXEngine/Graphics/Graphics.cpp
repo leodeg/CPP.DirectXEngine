@@ -6,6 +6,7 @@ namespace DXEngine
 	{
 		this->m_WindowWidth = width;
 		this->m_WindowHeight = height;
+		this->m_FpsTimer.Start ();
 
 		if (!InitializeDirectX (hwnd))
 		{
@@ -74,12 +75,23 @@ namespace DXEngine
 
 
 		// Draw text
+		static int fpsCounter = 0;
+		static std::string fpsString = "FPS: 0";
+		fpsCounter++;
+
+		if (m_FpsTimer.GetMilisecondsElapsed () > 1000.0)
+		{
+			fpsString = "FPS: " + std::to_string (fpsCounter);
+			fpsCounter = 0;
+			m_FpsTimer.Restart ();
+		}
+
 		m_SpriteBatch->Begin ();
-		m_SpriteFont->DrawString (m_SpriteBatch.get (), L"HELLO WORLD", DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2 (0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
+		m_SpriteFont->DrawString (m_SpriteBatch.get (), StringConverter::StringToWide(fpsString).c_str (), DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2 (0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
 		m_SpriteBatch->End ();
 
 		// Show rendered image to view
-		this->m_SwapChain->Present (1, NULL);
+		this->m_SwapChain->Present (0, NULL);
 	}
 
 	bool Graphics::InitializeDirectX (HWND hwnd)

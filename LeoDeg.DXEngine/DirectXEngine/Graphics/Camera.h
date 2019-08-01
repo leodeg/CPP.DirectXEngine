@@ -50,7 +50,7 @@ namespace DXEngine
 	private:
 		void UpdateViewMatrix ();
 
-		float m_CameraMoveSpeed = 0.05f;
+		float m_CameraMoveSpeed = 0.005f;
 		float m_CameraRotationSpeed = 0.005f;
 
 		XMVECTOR m_PosVector;

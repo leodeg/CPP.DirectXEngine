@@ -1,6 +1,7 @@
 #pragma once
 #include "WindowContainer.h"
 #include "ErrorLogger.h"
+#include "Timer.h"
 
 namespace DXEngine
 {
@@ -11,9 +12,17 @@ namespace DXEngine
 		bool ProcessMessages ();
 		void RenderFrame ();
 		void Update ();
-
-	protected:
+		
+		float GetDeltaTime ();
 
 	private:
+		Timer m_Timer;
+		float m_DeltaTime;
+
+	private:
+		void UpdateDeltaTime ();
+		void UpdateMouseEvents ();
+		void UpdateKeyboardEvents ();
+		void UpdateCameraMovement ();
 	};
 }

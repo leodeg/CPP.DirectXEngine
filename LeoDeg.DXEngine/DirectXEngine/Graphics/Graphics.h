@@ -3,6 +3,7 @@
 #include "Shaders.h"
 #include "Vertex.h"
 #include "Camera.h"
+#include "..\\Timer.h"
 
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
@@ -33,14 +34,17 @@ namespace DXEngine
 		int m_WindowWidth = 0;
 		int m_WindowHeight = 0;
 
+		Timer m_FpsTimer;
 
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // it is used to create resources
 		Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_DeviceContext; // generates rendering commands
-		Microsoft::WRL::ComPtr<IDXGISwapChain>	m_SwapChain; // implements one or more surfaces for storing rendered data before presenting it to an output
+		Microsoft::WRL::ComPtr<IDXGISwapChain> m_SwapChain; // implements one or more surfaces for storing rendered data before presenting it to an output
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTargetView; // A render-target-view interface identifies the render-target subresources that can be accessed during rendering
+
 
 		VertexShader m_VertexShader;
 		PixelShader m_PixelShader;
+
 
 		ConstantBuffer<CB_VS_vertexshader> m_ConstantBuffer;
 		VertexBuffer<Vertex> m_VertexBuffer;
@@ -58,6 +62,5 @@ namespace DXEngine
 
 		Microsoft::WRL::ComPtr<ID3D11SamplerState> m_SamplerState;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_Texture;
-
 	};
 }
