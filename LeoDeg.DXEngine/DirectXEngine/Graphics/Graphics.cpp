@@ -26,7 +26,34 @@ namespace DXEngine
 			return false;
 		}
 
+		if (!InitializeImGui (hwnd))
+		{
+			ErrorLogger::Log (NULL, "Graphics::Initialize:: Failed ImGui initialization.");
+			return false;
+		}
+
 		return true;
+	}
+
+	bool Graphics::InitializeImGui (HWND hwnd)
+	{
+		IMGUI_CHECKVERSION ();
+		ImGui::CreateContext ();
+		ImGuiIO & io = ImGui::GetIO ();
+
+		if (!ImGui_ImplWin32_Init (hwnd))
+		{
+			ErrorLogger::Log (NULL, "Graphics::InitializeImGui:: Failed ImGui win 32 initialization.");
+			return false;
+		}
+
+		if (!ImGui_ImplDX11_Init (this->m_Device.Get (), this->m_DeviceContext.Get ()))
+		{
+			ErrorLogger::Log (NULL, "Graphics::InitializeImGui:: Failed ImGui DX11 initialization.");
+			return false;
+		}
+
+		ImGui::StyleColorsDark ();
 	}
 
 	void Graphics::RenderFrame ()
@@ -89,6 +116,22 @@ namespace DXEngine
 		m_SpriteBatch->Begin ();
 		m_SpriteFont->DrawString (m_SpriteBatch.get (), StringConverter::StringToWide(fpsString).c_str (), DirectX::XMFLOAT2 (0, 0), DirectX::Colors::White, 0.0f, DirectX::XMFLOAT2 (0.0f, 0.0f), DirectX::XMFLOAT2 (1.0f, 1.0f));
 		m_SpriteBatch->End ();
+
+
+		// Start the ImGui frame
+		ImGui_ImplDX11_NewFrame ();
+		ImGui_ImplWin32_NewFrame ();
+		ImGui::NewFrame ();
+
+		// Create ImGui Test Window
+		ImGui::Begin ("Test");
+		ImGui::End ();
+
+		// Assemble Together Draw Data
+		ImGui::Render ();
+
+		// Render Draw Data
+		ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
 
 		// Show rendered image to view
 		this->m_SwapChain->Present (0, NULL);

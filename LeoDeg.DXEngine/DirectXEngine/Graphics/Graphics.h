@@ -3,17 +3,21 @@
 #include "Shaders.h"
 #include "Vertex.h"
 #include "Camera.h"
-#include "..\\Timer.h"
 
-#include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "ConstantBufferTypes.h"
+#include "VertexBuffer.h"
 #include "ConstantBuffer.h"
+#include "ConstantBufferTypes.h"
 
-#include <SpriteBatch.h>
 #include <SpriteFont.h>
-
+#include <SpriteBatch.h>
 #include <WICTextureLoader.h>
+
+#include "ImGui\\imgui.h"
+#include "ImGui\\imgui_impl_win32.h"
+#include "ImGui\\imgui_impl_dx11.h"
+
+#include "..\\Timer.h"
 
 namespace DXEngine
 {
@@ -21,6 +25,9 @@ namespace DXEngine
 	{
 	public:
 		bool Initialize (HWND hwnd, int width, int height);
+
+		bool InitializeImGui (HWND hwnd);
+
 		void RenderFrame ();
 
 		Camera m_Camera;
@@ -41,14 +48,12 @@ namespace DXEngine
 		Microsoft::WRL::ComPtr<IDXGISwapChain> m_SwapChain; // implements one or more surfaces for storing rendered data before presenting it to an output
 		Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTargetView; // A render-target-view interface identifies the render-target subresources that can be accessed during rendering
 
-
 		VertexShader m_VertexShader;
 		PixelShader m_PixelShader;
 
-
-		ConstantBuffer<CB_VS_vertexshader> m_ConstantBuffer;
-		VertexBuffer<Vertex> m_VertexBuffer;
 		IndexBuffer m_IndexBuffer;
+		VertexBuffer<Vertex> m_VertexBuffer;
+		ConstantBuffer<CB_VS_vertexshader> m_ConstantBuffer;
 
 
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
