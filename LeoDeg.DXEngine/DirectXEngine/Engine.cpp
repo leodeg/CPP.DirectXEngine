@@ -54,14 +54,17 @@ namespace DXEngine
 		while (!m_Mouse.EventBufferIsEmpty ())
 		{
 			MouseEvent mouseEvent = m_Mouse.ReadEvent ();
-			if (mouseEvent.GetType () == MouseEvent::EventType::RAW_MOVE)
+			if (m_Mouse.IsRightDown ())
 			{
-				this->m_Graphics.m_Camera.AdjustRotation
-				(
-					static_cast<float>(mouseEvent.GetPosY ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
-					static_cast<float>(mouseEvent.GetPosX ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
-					0.0f
-				);
+				if (mouseEvent.GetType () == MouseEvent::EventType::RAW_MOVE)
+				{
+					this->m_Graphics.m_Camera.AdjustRotation
+					(
+						static_cast<float>(mouseEvent.GetPosY ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+						static_cast<float>(mouseEvent.GetPosX ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+						0.0f
+					);
+				}
 			}
 		}
 	}

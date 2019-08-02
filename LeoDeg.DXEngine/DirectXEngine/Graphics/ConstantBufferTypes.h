@@ -7,4 +7,9 @@ namespace DXEngine
 	{
 		DirectX::XMMATRIX stateMatrix;
 	};
+
+	struct CB_PS_pixelshader
+	{
+		float alpha = 1.0f;
+	};
 }

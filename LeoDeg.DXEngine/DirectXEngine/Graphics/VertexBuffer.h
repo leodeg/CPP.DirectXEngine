@@ -49,8 +49,13 @@ namespace DXEngine
 
 		HRESULT Initialize (ID3D11Device * device, T * data, UINT numOfVertices)
 		{
+			if (m_Buffer.Get () != nullptr)
+				m_Buffer.Reset ();
+
+			if (this->m_Stride.get () == nullptr)
+				this->m_Stride = std::make_unique<UINT> (sizeof (T));
+
 			this->m_BufferSize = numOfVertices;
-			this->m_Stride = std::make_unique<UINT> (sizeof (T));
 
 			D3D11_BUFFER_DESC vertexBufferDesc;
 			ZeroMemory (&vertexBufferDesc, sizeof (vertexBufferDesc));

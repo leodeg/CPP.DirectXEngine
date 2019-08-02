@@ -36,6 +36,9 @@ namespace DXEngine
 
 		HRESULT Initialize (ID3D11Device * device, ID3D11DeviceContext * deviceContext)
 		{
+			if (m_Buffer.Get () != nullptr)
+				m_Buffer.Reset ();
+
 			this->m_DeviceContext = deviceContext;
 
 			D3D11_BUFFER_DESC bufferDesc;
@@ -49,7 +52,6 @@ namespace DXEngine
 			HRESULT hResult = device->CreateBuffer (&bufferDesc, 0, m_Buffer.GetAddressOf ());
 			return hResult;
 		}
-
 
 		bool ApplyChanges ()
 		{

@@ -223,6 +223,15 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Data\Textures\tex_01.jpg" />
+    <Image Include="Data\Textures\tex_02.PNG" />
+    <Image Include="Data\Textures\tex_03.jpg" />
+    <Image Include="Data\Textures\tex_04.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Fonts\comic_sans_ms_16.spritefont" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

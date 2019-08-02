@@ -15,17 +15,13 @@ int APIENTRY wWinMain (_In_ HINSTANCE hInstance,
 	}
 
 	DXEngine::Engine engine;
-	if (engine.Initialize (hInstance, "TestWindow", "TestWindowClass", 800, 600))
+	if (engine.Initialize (hInstance, "LeoDeg.DXEngine", "LeoDeg.DXEngine.Window.Class", 800, 600))
 	{
 		while (engine.ProcessMessages () == true)
 		{
 			engine.Update ();
 			engine.RenderFrame ();
 		}
-	}
-	else
-	{
-		//DXEngine::ErrorLogger::Log (NULL, "Failed Engine initialization.");
 	}
 
 	return 0;

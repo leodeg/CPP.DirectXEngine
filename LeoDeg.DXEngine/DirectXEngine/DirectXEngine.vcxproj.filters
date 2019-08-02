@@ -40,6 +40,12 @@
     <Filter Include="Source Files\Graphics\ImGui">
       <UniqueIdentifier>{0b4af861-dc3c-4dcd-a25b-df8469007530}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Textures">
+      <UniqueIdentifier>{e74745d0-a425-4f60-aa17-7c37426dd02f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Fonts">
+      <UniqueIdentifier>{69228766-2b2e-4a77-b047-a622870f9eed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -193,5 +199,24 @@
     <FxCompile Include="vertexshader.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Data\Textures\tex_01.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="Data\Textures\tex_02.PNG">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="Data\Textures\tex_03.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="Data\Textures\tex_04.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Fonts\comic_sans_ms_16.spritefont">
+      <Filter>Resource Files\Fonts</Filter>
+    </None>
   </ItemGroup>
 </Project>
