@@ -46,15 +46,15 @@
     <Filter Include="Resource Files\Fonts">
       <UniqueIdentifier>{69228766-2b2e-4a77-b047-a622870f9eed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Tools">
+      <UniqueIdentifier>{b30b5e92-7893-43d4-8046-0dfe07c0f6a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tools">
+      <UniqueIdentifier>{50496bf4-4071-47f4-9e25-4e634df34128}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StringConverter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ErrorLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RenderWindow.cpp">
@@ -90,9 +90,6 @@
     <ClCompile Include="Graphics\Camera.cpp">
       <Filter>Source Files\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\ImGui\imgui_widgets.cpp">
       <Filter>Source Files\Graphics\ImGui</Filter>
     </ClCompile>
@@ -108,14 +105,17 @@
     <ClCompile Include="Graphics\ImGui\imgui_impl_win32.cpp">
       <Filter>Source Files\Graphics\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="ErrorLogger.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="StringConverter.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Source Files\Tools</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StringConverter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ErrorLogger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -164,9 +164,6 @@
     <ClInclude Include="Graphics\Camera.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\ImGui\imconfig.h">
       <Filter>Header Files\Graphics\ImGui</Filter>
     </ClInclude>
@@ -190,6 +187,18 @@
     </ClInclude>
     <ClInclude Include="Graphics\ImGui\imgui_impl_dx11.h">
       <Filter>Header Files\Graphics\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorLogger.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="StringConverter.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Header Files\Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="COMException.h">
+      <Filter>Header Files\Tools</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

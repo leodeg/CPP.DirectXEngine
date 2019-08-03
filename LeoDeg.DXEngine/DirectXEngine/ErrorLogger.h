@@ -1,5 +1,8 @@
 #pragma once
+
 #include "StringConverter.h"
+#include "COMException.h"
+
 #include <Windows.h>
 #include <iostream>
 
@@ -42,5 +45,10 @@ namespace DXEngine
 		/// Write message to output debug
 		// --------------------------------------------------------------------------------
 		static void LogDebug (HRESULT hr, std::string message);
+
+		// --------------------------------------------------------------------------------
+		/// Write COMCException message
+		// --------------------------------------------------------------------------------
+		static void Log (COMException & exception);
 	};
 }

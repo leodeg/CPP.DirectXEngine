@@ -1,5 +1,4 @@
 #include "ErrorLogger.h"
-#include <comdef.h>
 
 namespace DXEngine
 {
@@ -47,5 +46,12 @@ namespace DXEngine
 		_com_error error (hr);
 		std::wstring errorMessage = L"Error: " + StringConverter::StringToWide (message) + L"\n" + error.ErrorMessage ();
 		OutputDebugStringW (errorMessage.c_str ());
+	}
+
+	void ErrorLogger::Log (COMException & exception)
+	{
+		std::wstring error_message = exception.GetErrorMessage ();
+		//std::wstring error_message = exception.what ();
+		MessageBoxW (NULL, error_message.c_str (), L"Error", MB_ICONERROR);
 	}
 }

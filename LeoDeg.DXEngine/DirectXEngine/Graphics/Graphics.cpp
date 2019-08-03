@@ -17,34 +17,23 @@ namespace DXEngine
 		m_ThirdAlpha = 1.0f;
 		m_FpsString = "FPS: 0";
 
-		if (!InitializeDirectX (hwnd))
+		try
 		{
-			ErrorLogger::Log (NULL, "Graphics::Initialize:: Failed DirectX initialization.");
-			return false;
+			InitializeDirectX (hwnd);
+			InitializeShaders ();
+			InitializeScene ();
+			InitializeImGui (hwnd);
 		}
-
-		if (!InitializeShaders ())
+		catch (COMException & exception)
 		{
-			ErrorLogger::Log (NULL, "Graphics::Initialize:: Failed Shaders initialization.");
-			return false;
-		}
-
-		if (!InitializeScene ())
-		{
-			ErrorLogger::Log (NULL, "Graphics::Initialize:: Failed Scene initialization.");
-			return false;
-		}
-
-		if (!InitializeImGui (hwnd))
-		{
-			ErrorLogger::Log (NULL, "Graphics::Initialize:: Failed ImGui initialization.");
+			ErrorLogger::Log (exception);
 			return false;
 		}
 
 		return true;
 	}
 
-	bool Graphics::InitializeImGui (HWND hwnd)
+	void Graphics::InitializeImGui(HWND hwnd)
 	{
 		IMGUI_CHECKVERSION ();
 		ImGui::CreateContext ();
@@ -52,17 +41,29 @@ namespace DXEngine
 
 		if (!ImGui_ImplWin32_Init (hwnd))
 		{
-			ErrorLogger::Log (NULL, "Graphics::InitializeImGui:: Failed ImGui win 32 initialization.");
-			return false;
+			COM_ERROR_IF_FAILED (NULL, "Failed ImGui win 32 initialization.");
 		}
 
 		if (!ImGui_ImplDX11_Init (this->m_Device.Get (), this->m_DeviceContext.Get ()))
 		{
-			ErrorLogger::Log (NULL, "Graphics::InitializeImGui:: Failed ImGui DX11 initialization.");
-			return false;
+			COM_ERROR_IF_FAILED (NULL, "Failed ImGui DX11 initialization.");
 		}
 
 		ImGui::StyleColorsDark ();
+	}
+
+	// ------------------------------
+	// GETTERS
+	// ------------------------------	
+
+	int Graphics::GetFpsCount ()
+	{
+		return this->m_FpsCounter;
+	}
+
+	std::string Graphics::GetFpsString ()
+	{
+		return this->m_FpsString;
 	}
 
 	// ------------------------------
@@ -77,7 +78,7 @@ namespace DXEngine
 		DrawTextureObject (this->m_FirstTexture.GetAddressOf (), m_FirstAlpha, new float[3]{ 0.0f, 0.0f, 0.0f }, new float[3]{ 5.0f, 5.0f, 5.0f }, offset);
 		DrawTextureObject (this->m_SecondTexture.GetAddressOf (), m_SecondAlpha, new float[3]{ 0.0f, 0.0f, 4.0f }, new float[3]{ 1.0f, 1.0f, 1.0f }, offset);
 		DrawTextureObject (this->m_ThirdTexture.GetAddressOf (), m_ThirdAlpha, new float[3]{ 0.0f, 0.0f, -1.0f }, new float[3]{ 1.0f, 1.0f, 1.0f }, offset);
-		
+
 		UpdateFPSCounter ();
 		RenderFonts ();
 		UpdateRenderingImGUI ();
@@ -113,13 +114,12 @@ namespace DXEngine
 
 	void Graphics::UpdateFPSCounter ()
 	{
-		static int fpsCounter = 0;
-		fpsCounter++;
+		m_FpsCounter++;
 
 		if (m_FpsTimer.GetMilisecondsElapsed () > 1000.0)
 		{
-			m_FpsString = "FPS: " + std::to_string (fpsCounter);
-			fpsCounter = 0;
+			m_FpsString = "FPS: " + std::to_string (m_FpsCounter);
+			m_FpsCounter = 0;
 			m_FpsTimer.Restart ();
 		}
 	}
@@ -186,46 +186,41 @@ namespace DXEngine
 	// INITIALIZE DIRECTX
 	// ------------------------------
 
-	bool Graphics::InitializeDirectX (HWND hwnd)
+	void Graphics::InitializeDirectX(HWND hwnd)
 	{
 		HRESULT hResult;
+		try
+		{
+			InitializeSwapChain (hwnd, hResult);
+			InitializeBackBufferAndRenderTargetView (hResult);
+			InitializeDepthStencilBuffer (hResult);
+			InitializeDepthStencilState (hResult);
 
-		if (!InitializeSwapChain (hwnd, hResult))
-			return false;
-		if (!InitializeBackBufferAndRenderTargetView (hResult))
-			return false;
-		if (!InitializeDepthStencilBuffer (hResult))
-			return false;
-		if (!InitializeDepthStencilState (hResult))
-			return false;
+			InitializeViewport ();
 
-		InitializeViewport ();
+			InitializeRasterizedState (hResult);
+			InitializeBlendState (hResult);
+			InitializeRenderingFonts ();
 
-		if (!InitializeRasterizedState (hResult))
-			return false;
-		if (!InitializeBlendState (hResult))
-			return false;
-
-		InitializeRenderingFonts ();
-
-		if (!CreateSamplerState (hResult))
-			return false;
-
-		return true;
+			CreateSamplerState (hResult);
+		}
+		catch (COMException & exception)
+		{
+			ErrorLogger::Log (exception);
+		}
 	}
 
-	bool Graphics::InitializeSwapChain (HWND hwnd, HRESULT & hResult)
+	void Graphics::InitializeSwapChain (HWND hwnd, HRESULT & hResult)
 	{
 		std::vector<AdapterData> adapters = AdapterReader::GetAdapters ();
 
 		if (adapters.size () < 1)
 		{
 			ErrorLogger::Log ("No IDXGI Adapters found.");
-			return false;
+			return;
 		}
 
-		DXGI_SWAP_CHAIN_DESC swapChainDescription;
-		ZeroMemory (&swapChainDescription, sizeof (DXGI_SWAP_CHAIN_DESC));
+		DXGI_SWAP_CHAIN_DESC swapChainDescription = { 0 };
 
 		swapChainDescription.BufferDesc.Width = this->m_WindowWidth;
 		swapChainDescription.BufferDesc.Height = this->m_WindowHeight;
@@ -259,157 +254,71 @@ namespace DXEngine
 			NULL,
 			this->m_DeviceContext.GetAddressOf ());
 
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create device and swap-chain.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to create device and swap-chain.");
 	}
 
-	bool Graphics::InitializeBackBufferAndRenderTargetView (HRESULT & hResult)
+	void Graphics::InitializeBackBufferAndRenderTargetView (HRESULT & hResult)
 	{
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
-		hResult = this->m_SwapChain->GetBuffer (0, __uuidof (ID3D11Texture2D), reinterpret_cast<void **> (backBuffer.GetAddressOf ()));
 
-		if (FAILED (hResult)) //If error occurred
-		{
-			ErrorLogger::Log (hResult, " Graphics::InitializeDirectX:: GetBuffer Failed.");
-			return false;
-		}
+		hResult = this->m_SwapChain->GetBuffer (0, __uuidof (ID3D11Texture2D), reinterpret_cast<void **> (backBuffer.GetAddressOf ()));
+		COM_ERROR_IF_FAILED (hResult, "GetBuffer Failed.");
 
 		hResult = this->m_Device->CreateRenderTargetView (backBuffer.Get (), NULL, this->m_RenderTargetView.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create render target view.");
-			return false;
-		}
-
+		COM_ERROR_IF_FAILED (hResult, "Failed to create render target view.");
 
 		this->m_DeviceContext->OMSetRenderTargets (1, this->m_RenderTargetView.GetAddressOf (), NULL);
-
-		return true;
 	}
 
-	bool Graphics::InitializeDepthStencilBuffer (HRESULT & hResult)
+	void Graphics::InitializeDepthStencilBuffer (HRESULT & hResult)
 	{
-		D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
-		depthStencilBufferDesc.Width = this->m_WindowWidth;
-		depthStencilBufferDesc.Height = this->m_WindowHeight;
-		depthStencilBufferDesc.MipLevels = 1;
-		depthStencilBufferDesc.ArraySize = 1;
-		depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		depthStencilBufferDesc.SampleDesc.Count = 1;
-		depthStencilBufferDesc.SampleDesc.Quality = 0;
-		depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		depthStencilBufferDesc.CPUAccessFlags = 0;
-		depthStencilBufferDesc.MiscFlags = 0;
-
-		hResult = this->m_Device->CreateTexture2D (&depthStencilBufferDesc, NULL, this->m_DepthStencilBuffer.GetAddressOf ());
-
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create depth stencil buffer.");
-			return false;
-		}
+		CD3D11_TEXTURE2D_DESC depthStencilTextureDesc (DXGI_FORMAT_D24_UNORM_S8_UINT, this->m_WindowWidth, this->m_WindowHeight);
+		depthStencilTextureDesc.MipLevels = 1;
+		depthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		
+		hResult = this->m_Device->CreateTexture2D (&depthStencilTextureDesc, NULL, this->m_DepthStencilBuffer.GetAddressOf ());
+		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil buffer.");
 
 		hResult = this->m_Device->CreateDepthStencilView (this->m_DepthStencilBuffer.Get (), NULL, this->m_DepthStencilView.GetAddressOf ());
-
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create depth stencil view.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil view.");
 
 		this->m_DeviceContext->OMSetRenderTargets (1, this->m_RenderTargetView.GetAddressOf (), this->m_DepthStencilView.Get ());
-
-		return true;
 	}
 
-	bool Graphics::InitializeDepthStencilState (HRESULT & hResult)
+	void Graphics::InitializeDepthStencilState (HRESULT & hResult)
 	{
-		D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
-		ZeroMemory (&depthStencilStateDesc, (sizeof (D3D11_DEPTH_STENCIL_DESC)));
-
-		depthStencilStateDesc.DepthEnable = true;
-		depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL;
+		CD3D11_DEPTH_STENCIL_DESC depthStencilStateDesc (D3D11_DEFAULT);
 		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS_EQUAL;
 
 		hResult = this->m_Device->CreateDepthStencilState (&depthStencilStateDesc, this->m_DepthStencilState.GetAddressOf ());
-
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create depth stencil state.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil state.");
 	}
 
 	void Graphics::InitializeViewport ()
 	{
 		// Create a viewport
-		D3D11_VIEWPORT viewport;
-		ZeroMemory (&viewport, sizeof (D3D11_VIEWPORT));
-
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-		viewport.Width = static_cast<float>(this->m_WindowWidth);
-		viewport.Height = static_cast<float>(this->m_WindowHeight);
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-
+		CD3D11_VIEWPORT viewport (0.0f, 0.0f, static_cast<float>(this->m_WindowWidth), static_cast<float>(this->m_WindowHeight));
+		
 		// Set viewport
 		this->m_DeviceContext->RSSetViewports (1, &viewport);
 	}
 
-	bool Graphics::InitializeRasterizedState (HRESULT & hResult)
+	void Graphics::InitializeRasterizedState (HRESULT & hResult)
 	{
 		// BACK
-		D3D11_RASTERIZER_DESC rasterizerCullBackDesc;
-		ZeroMemory (&rasterizerCullBackDesc, sizeof (D3D11_RASTERIZER_DESC));
-
-		//rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
-		rasterizerCullBackDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rasterizerCullBackDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
-		//rasterizerDesc.FrontCounterClockwise = TRUE;
-
+		CD3D11_RASTERIZER_DESC rasterizerCullBackDesc (D3D11_DEFAULT);
 		hResult = this->m_Device->CreateRasterizerState (&rasterizerCullBackDesc, this->m_RasterizerStateCullBack.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create rasterizer cull back state.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to create rasterizer cull back state.");
 
 		// FRONT
-		D3D11_RASTERIZER_DESC rasterizerCullFrontDesc;
-		ZeroMemory (&rasterizerCullFrontDesc, sizeof (D3D11_RASTERIZER_DESC));
-
-		//rasterizerDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
-		rasterizerCullFrontDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-		rasterizerCullFrontDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_FRONT;
-		//rasterizerDesc.FrontCounterClockwise = TRUE;
-
+		CD3D11_RASTERIZER_DESC rasterizerCullFrontDesc (D3D11_DEFAULT);
 		hResult = this->m_Device->CreateRasterizerState (&rasterizerCullFrontDesc, this->m_RasterizerStateCullFront.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create rasterizer cull front state.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to create rasterizer cull front state.");
 	}
 
-	bool Graphics::InitializeBlendState (HRESULT & hResult)
+	void Graphics::InitializeBlendState (HRESULT & hResult)
 	{
-		D3D11_BLEND_DESC blendDesc;
-		ZeroMemory (&blendDesc, sizeof (blendDesc));
-
-		D3D11_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc;
-		ZeroMemory (&renderTargetBlendDesc, sizeof (renderTargetBlendDesc));
-
+		D3D11_RENDER_TARGET_BLEND_DESC renderTargetBlendDesc = { 0 };
 		renderTargetBlendDesc.BlendEnable = true;
 		renderTargetBlendDesc.SrcBlend = D3D11_BLEND::D3D11_BLEND_SRC_ALPHA;
 		renderTargetBlendDesc.DestBlend = D3D11_BLEND::D3D11_BLEND_INV_SRC_ALPHA;
@@ -419,16 +328,11 @@ namespace DXEngine
 		renderTargetBlendDesc.BlendOpAlpha = D3D11_BLEND_OP::D3D11_BLEND_OP_ADD;
 		renderTargetBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE::D3D11_COLOR_WRITE_ENABLE_ALL;
 
+		D3D11_BLEND_DESC blendDesc = { 0 };
 		blendDesc.RenderTarget[0] = renderTargetBlendDesc;
 
 		hResult = this->m_Device->CreateBlendState (&blendDesc, this->m_BlendState.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create blend state.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to create blend state.");
 	}
 
 	void Graphics::InitializeRenderingFonts ()
@@ -437,35 +341,23 @@ namespace DXEngine
 		m_SpriteFont = std::make_unique <DirectX::SpriteFont> (this->m_Device.Get (), L"Data\\Fonts\\comic_sans_ms_16.spritefont");
 	}
 
-	bool Graphics::CreateSamplerState (HRESULT & hResult)
+	void Graphics::CreateSamplerState (HRESULT & hResult)
 	{
-		D3D11_SAMPLER_DESC samplerDesc;
-		ZeroMemory (&samplerDesc, sizeof (samplerDesc));
-
-		samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		CD3D11_SAMPLER_DESC samplerDesc (D3D11_DEFAULT);
 		samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 		samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-		samplerDesc.MinLOD = 0;
-		samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 		hResult = this->m_Device->CreateSamplerState (&samplerDesc, this->m_SamplerState.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeDirectX:: Failed to create sampler state.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to create sampler state.");
 	}
 
 	// ------------------------------
 	// INITIALIZE SHADERS
 	// ------------------------------
 
-	bool Graphics::InitializeShaders ()
-	{
+	void Graphics::InitializeShaders()
+{
 		std::wstring shaderfolder = DetermineShaderPath ();
 
 		D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -478,17 +370,15 @@ namespace DXEngine
 
 		if (!m_VertexShader.Initialize (this->m_Device, shaderfolder + L"vertexshader.cso", layout, numOfElements))
 		{
-			ErrorLogger::Log (NULL, "Graphics::InitializeShaders:: Failed Vertex Shader initialization");
-			return false;
+			COM_ERROR_IF_FAILED (NULL, "Failed Vertex Shader initialization.");
+			return;
 		}
 
 		if (!m_PixelShader.Initialize (this->m_Device, shaderfolder + L"pixelshader.cso"))
 		{
-			ErrorLogger::Log (NULL, "Graphics::InitializeShaders:: Failed Pixel Shader initialization");
-			return false;
+			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader initialization.");
+			return;
 		}
-
-		return true;
 	}
 
 	std::wstring Graphics::DetermineShaderPath ()
@@ -523,23 +413,25 @@ namespace DXEngine
 	// INITIALIZE SCENE
 	// ------------------------------
 
-	bool Graphics::InitializeScene ()
-	{
+	void Graphics::InitializeScene()
+{
 		HRESULT hResult;
 
-		if (!InitializeVertexAndIndexBuffers (hResult))
-			return false;
-		if (!LoadTextures (hResult))
-			return false;
-		if (!InitializeConstantBuffers (hResult))
-			return false;
+		try
+		{
+			InitializeVertexAndIndexBuffers (hResult);
+			LoadTextures (hResult);
+			InitializeConstantBuffers (hResult);
 
-		InitializeMainCamera ();
-
-		return true;
+			InitializeMainCamera ();
+		}
+		catch (COMException & exception)
+		{
+			ErrorLogger::Log (exception);
+		}
 	}
 
-	bool Graphics::InitializeVertexAndIndexBuffers (HRESULT & hResult)
+	void Graphics::InitializeVertexAndIndexBuffers(HRESULT & hResult)
 	{
 		// SQUARE
 		Vertex vertexArray[] =
@@ -551,8 +443,8 @@ namespace DXEngine
 
 			Vertex (-0.5f, -0.5f, 0.001f, 0.0f, 1.0f),  //BACK Bottom Left	- [0]
 			Vertex (-0.5f,  0.5f, 0.001f, 0.0f, 0.0f),  //BACK Top Left		- [1]
-			Vertex ( 0.5f,  0.5f, 0.001f, 1.0f, 0.0f),  //BACK Top Right		- [2]
-			Vertex ( 0.5f, -0.5f, 0.001f, 1.0f, 1.0f),  //BACK Bottom Right	- [3]
+			Vertex (0.5f,  0.5f, 0.001f, 1.0f, 0.0f),  //BACK Top Right		- [2]
+			Vertex (0.5f, -0.5f, 0.001f, 1.0f, 1.0f),  //BACK Bottom Right	- [3]
 		};
 
 		// SQUARE INDICES
@@ -570,72 +462,37 @@ namespace DXEngine
 			1, 6, 2, // TOP
 			0, 3, 7, // BOTTOM
 			0, 7, 4  // BOTTOM
-		};
-
+	};
 
 		// VERTEX BUFFER
 		hResult = this->m_VertexBuffer.Initialize (this->m_Device.Get (), vertexArray, ARRAYSIZE (vertexArray));
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create vertex buffer.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to create vertex buffer.");
 
 		// INDEX BUFFER
 		hResult = this->m_IndexBuffer.Initilization (m_Device.Get (), indices, ARRAYSIZE (indices));
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create indices buffer.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to create indices buffer.");
+}
 
-		return true;
-	}
-
-	bool Graphics::LoadTextures (HRESULT & hResult)
+	void Graphics::LoadTextures(HRESULT & hResult)
 	{
 		// LOAD TEXTURE
 		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_02.png", nullptr, m_FirstTexture.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create First WIC texture from file.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to create First WIC texture from file.");
 
 		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_01.jpg", nullptr, m_SecondTexture.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create Second WIC texture from file.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to create Second WIC texture from file.");
 
 		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_03.jpg", nullptr, m_SecondTexture.GetAddressOf ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to create Third WIC texture from file.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to create Third WIC texture from file.");
 	}
 
-	bool Graphics::InitializeConstantBuffers (HRESULT & hResult)
+	void Graphics::InitializeConstantBuffers(HRESULT & hResult)
 	{
 		hResult = m_ConstantVSBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to initialize vertex shader constant buffer.");
-			return false;
-		}
+		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex shader constant buffer.");
 
 		hResult = m_ConstantPSBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
-		if (FAILED (hResult))
-		{
-			ErrorLogger::Log (hResult, "Graphics::InitializeScene:: Failed to initialize pixel shader constant buffer.");
-			return false;
-		}
-
-		return true;
+		COM_ERROR_IF_FAILED (hResult, "Failed to initialize pixel shader constant buffer.");
 	}
 
 	void Graphics::InitializeMainCamera ()
