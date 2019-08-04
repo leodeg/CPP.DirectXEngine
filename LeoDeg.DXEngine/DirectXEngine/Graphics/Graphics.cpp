@@ -134,8 +134,15 @@ namespace DXEngine
 		ImGui_ImplWin32_NewFrame ();
 		ImGui::NewFrame ();
 
+		XMFLOAT3 camPos = m_Camera.m_Transform.GetPosFloat3 ();
+		XMFLOAT3 camRot = m_Camera.m_Transform.GetRotFloat3 ();
+		std::string cameraPosString = "Camera Pos: x {" + std::to_string (camPos.x) + "}, y {" + std::to_string (camPos.y) + "}, z {" + std::to_string (camPos.z) + "}";
+		std::string cameraRotString = "Camera Rot: x {" + std::to_string (camRot.x) + "}, y {" + std::to_string (camRot.y) + "}, z {" + std::to_string (camRot.z) + "}";
+
 		// Create ImGui Test Window
 		ImGui::Begin ("Scene Properties");
+		ImGui::Text (cameraPosString.c_str ());
+		ImGui::Text (cameraRotString.c_str ());
 		ImGui::End ();
 
 		// Assemble Together Draw Data
@@ -147,7 +154,7 @@ namespace DXEngine
 
 	void Graphics::DrawTextureObject ()
 	{
-		m_Model.Draw (m_Camera.GetViewMatrix () * m_Camera.GetProjectionMatrix ());
+		m_Model.Draw (m_Camera.m_Transform.GetViewMatrix () * m_Camera.m_Transform.GetProjectionMatrix ());
 	}
 
 	// ------------------------------
@@ -422,8 +429,8 @@ namespace DXEngine
 
 	void Graphics::InitializeMainCamera ()
 	{
-		m_Camera.SetPosition (0.0f, 0.0f, -5.0f);
-		m_Camera.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
+		m_Camera.m_Transform.SetPos (0.0f, 0.0f, -2.0f);
+		m_Camera.m_Transform.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
 	}
 
 	void Graphics::InitializeModels ()

@@ -18,6 +18,8 @@ namespace DXEngine
 			ErrorLogger::Log (NULL, "Engine::Initialize:: Failed graphics initialization");
 			return false;
 		}
+
+		return true;
 	}
 
 	float Engine::GetDeltaTime ()
@@ -58,7 +60,7 @@ namespace DXEngine
 			{
 				if (mouseEvent.GetType () == MouseEvent::EventType::RAW_MOVE)
 				{
-					this->m_Graphics.m_Camera.AdjustRotation
+					this->m_Graphics.m_Camera.m_Transform.AdjustRot
 					(
 						static_cast<float>(mouseEvent.GetPosY ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
 						static_cast<float>(mouseEvent.GetPosX ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
@@ -87,35 +89,35 @@ namespace DXEngine
 	{
 		if (m_Keyboard.KeyIsPressed ('E'))
 		{
-			this->m_Graphics.m_Camera.AdjustPosition (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
+			this->m_Graphics.m_Camera.m_Transform.AdjustPos (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('Q'))
 		{
-			this->m_Graphics.m_Camera.AdjustPosition (0.0f, -this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
+			this->m_Graphics.m_Camera.m_Transform.AdjustPos (0.0f, -this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('A'))
 		{
-			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetLeftVector ()
+			this->m_Graphics.m_Camera.m_Transform.AdjustPos (this->m_Graphics.m_Camera.m_Transform.GetLeftVector ()
 				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('D'))
 		{
-			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetRightVector ()
+			this->m_Graphics.m_Camera.m_Transform.AdjustPos (this->m_Graphics.m_Camera.m_Transform.GetRightVector ()
 				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('W'))
 		{
-			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetForwardVector ()
+			this->m_Graphics.m_Camera.m_Transform.AdjustPos (this->m_Graphics.m_Camera.m_Transform.GetForwardVector ()
 				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('S'))
 		{
-			this->m_Graphics.m_Camera.AdjustPosition (this->m_Graphics.m_Camera.GetBackwardVector ()
+			this->m_Graphics.m_Camera.m_Transform.AdjustPos (this->m_Graphics.m_Camera.m_Transform.GetBackwardVector ()
 				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
 		}
 	}

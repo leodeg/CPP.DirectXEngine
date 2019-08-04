@@ -4,10 +4,11 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "ConstantBuffer.h"
+#include "..\\GameObject.h"
 
 namespace DXEngine
 {
-	class Model
+	class Model : public GameObject
 	{
 	public:
 		bool Initialize (ID3D11Device * device, ID3D11DeviceContext * deviceContext, ID3D11ShaderResourceView * texture, ConstantBuffer<CB_VS_vertexshader> & constantBufferVS);
@@ -15,6 +16,7 @@ namespace DXEngine
 		void Draw (const DirectX::XMMATRIX & viewProjectionMatrix);
 
 	private:
+
 		void UpdateWorldMatrix ();
 
 		ID3D11Device * m_Device = nullptr;
