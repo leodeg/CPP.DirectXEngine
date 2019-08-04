@@ -1,13 +1,8 @@
 #pragma once
 #include "AdapterReader.h"
 #include "Shaders.h"
-#include "Vertex.h"
 #include "Camera.h"
-
-#include "IndexBuffer.h"
-#include "VertexBuffer.h"
-#include "ConstantBuffer.h"
-#include "ConstantBufferTypes.h"
+#include "Model.h"
 
 #include <SpriteFont.h>
 #include <SpriteBatch.h>
@@ -36,7 +31,7 @@ namespace DXEngine
 		void UpdateRenderingImGUI ();
 
 		// Create methods
-		void DrawTextureObject (ID3D11ShaderResourceView ** texture, float alphaBlendValue = 1.0f, float translationOffset[3] = new float[3]{ 0.0f, 0.0f, 0.0f }, float scaling[3] = new float[3]{ 1.0f, 1.0f, 1.0f }, UINT vertexBufferOffset = 0);
+		void DrawTextureObject ();
 
 		// Getters
 		int GetFpsCount ();
@@ -64,7 +59,9 @@ namespace DXEngine
 
 		// Initialize Scene
 		void InitializeScene ();
-		void InitializeVertexAndIndexBuffers (HRESULT & hResult);
+
+		void InitializeModels ();
+
 		void LoadTextures (HRESULT & hResult);
 		void InitializeConstantBuffers (HRESULT & hResult);
 		void InitializeMainCamera ();
@@ -74,15 +71,13 @@ namespace DXEngine
 		int m_WindowWidth = 0;
 		int m_WindowHeight = 0;
 
-		// Textures alpha blending values
-		float m_FirstAlpha;
-		float m_SecondAlpha;
-		float m_ThirdAlpha;
-
 		// FPS timer
 		Timer m_FpsTimer;
 		int m_FpsCounter;
 		std::string m_FpsString;
+
+		// Models
+		Model m_Model;
 
 		// Graphics Base
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // It is used to create resources
@@ -95,8 +90,6 @@ namespace DXEngine
 		PixelShader m_PixelShader;
 
 		// Buffers
-		IndexBuffer m_IndexBuffer;
-		VertexBuffer<Vertex> m_VertexBuffer;
 		ConstantBuffer<CB_VS_vertexshader> m_ConstantVSBuffer; 	// Constant vertex shader buffer
 		ConstantBuffer<CB_PS_pixelshader> m_ConstantPSBuffer;	// Constant pixel shader buffer
 

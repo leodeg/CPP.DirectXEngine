@@ -11,10 +11,6 @@ namespace DXEngine
 		this->m_WindowWidth = width;
 		this->m_WindowHeight = height;
 		this->m_FpsTimer.Start ();
-
-		m_FirstAlpha = 1.0f;
-		m_SecondAlpha = 1.0f;
-		m_ThirdAlpha = 1.0f;
 		m_FpsString = "FPS: 0";
 
 		try
@@ -33,7 +29,7 @@ namespace DXEngine
 		return true;
 	}
 
-	void Graphics::InitializeImGui(HWND hwnd)
+	void Graphics::InitializeImGui (HWND hwnd)
 	{
 		IMGUI_CHECKVERSION ();
 		ImGui::CreateContext ();
@@ -75,9 +71,8 @@ namespace DXEngine
 		UINT offset = 0;
 
 		UpdateDeviceContext ();
-		DrawTextureObject (this->m_FirstTexture.GetAddressOf (), m_FirstAlpha, new float[3]{ 0.0f, 0.0f, 0.0f }, new float[3]{ 5.0f, 5.0f, 5.0f }, offset);
-		DrawTextureObject (this->m_SecondTexture.GetAddressOf (), m_SecondAlpha, new float[3]{ 0.0f, 0.0f, 4.0f }, new float[3]{ 1.0f, 1.0f, 1.0f }, offset);
-		DrawTextureObject (this->m_ThirdTexture.GetAddressOf (), m_ThirdAlpha, new float[3]{ 0.0f, 0.0f, -1.0f }, new float[3]{ 1.0f, 1.0f, 1.0f }, offset);
+
+		DrawTextureObject ();
 
 		UpdateFPSCounter ();
 		RenderFonts ();
@@ -100,11 +95,12 @@ namespace DXEngine
 		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
 		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+		// Rasterized state
 		this->m_DeviceContext->RSSetState (this->m_RasterizerStateCullBack.Get ());
 		this->m_DeviceContext->OMSetDepthStencilState (this->m_DepthStencilState.Get (), 0);
 
 		// Blend factor
-		this->m_DeviceContext->OMSetBlendState (this->m_BlendState.Get (), NULL, 0xFFFFFFFF);
+		this->m_DeviceContext->OMSetBlendState (NULL, NULL, 0xFFFFFFFF);
 
 		// Shader set stage
 		this->m_DeviceContext->PSSetSamplers (0, 1, this->m_SamplerState.GetAddressOf ());
@@ -140,9 +136,6 @@ namespace DXEngine
 
 		// Create ImGui Test Window
 		ImGui::Begin ("Scene Properties");
-		ImGui::DragFloat ("Alpha 1", &m_FirstAlpha, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat ("Alpha 2", &m_SecondAlpha, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat ("Alpha 3", &m_ThirdAlpha, 0.01f, 0.0f, 1.0f);
 		ImGui::End ();
 
 		// Assemble Together Draw Data
@@ -152,41 +145,16 @@ namespace DXEngine
 		ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
 	}
 
-	void Graphics::DrawTextureObject (ID3D11ShaderResourceView ** texture, float alphaBlendValue, float translationOffset[3], float scaling[3], UINT vertexBufferOffset)
+	void Graphics::DrawTextureObject ()
 	{
-		DirectX::XMMATRIX worldMatrix = XMMatrixScaling (scaling[0], scaling[1], scaling[2]) * XMMatrixTranslation (translationOffset[0], translationOffset[1], translationOffset[2]);
-
-		m_ConstantVSBuffer.m_Data.stateMatrix = worldMatrix * m_Camera.GetViewMatrix () * m_Camera.GetProjectionMatrix ();
-		m_ConstantVSBuffer.m_Data.stateMatrix = DirectX::XMMatrixTranspose (m_ConstantVSBuffer.m_Data.stateMatrix); // to column major format
-
-		if (!m_ConstantVSBuffer.ApplyChanges ()) return;
-		this->m_DeviceContext->VSSetConstantBuffers (0, 1, m_ConstantVSBuffer.GetAddressOf ());
-
-		// Pixel Shader Constant Buffers
-		m_ConstantPSBuffer.m_Data.alpha = alphaBlendValue;
-
-		if (!m_ConstantPSBuffer.ApplyChanges ()) return;
-		this->m_DeviceContext->PSSetConstantBuffers (0, 1, m_ConstantPSBuffer.GetAddressOf ());
-
-		// Square
-		//this->m_DeviceContext->PSSetShaderResources (0, 1, this->m_FirstTexture.GetAddressOf ());
-		this->m_DeviceContext->PSSetShaderResources (0, 1, texture);
-		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), m_VertexBuffer.GetStridePtr (), &vertexBufferOffset);
-		this->m_DeviceContext->IASetIndexBuffer (m_IndexBuffer.GetBuffer (), DXGI_FORMAT_R32_UINT, 0);
-
-		// Index buffer for square
-		this->m_DeviceContext->RSSetState (this->m_RasterizerStateCullFront.Get ());
-		this->m_DeviceContext->DrawIndexed (m_IndexBuffer.GetBufferSize (), 0, 0);
-
-		this->m_DeviceContext->RSSetState (this->m_RasterizerStateCullBack.Get ());
-		this->m_DeviceContext->DrawIndexed (m_IndexBuffer.GetBufferSize (), 0, 0);
+		m_Model.Draw (m_Camera.GetViewMatrix () * m_Camera.GetProjectionMatrix ());
 	}
 
 	// ------------------------------
 	// INITIALIZE DIRECTX
 	// ------------------------------
 
-	void Graphics::InitializeDirectX(HWND hwnd)
+	void Graphics::InitializeDirectX (HWND hwnd)
 	{
 		HRESULT hResult;
 		try
@@ -275,7 +243,7 @@ namespace DXEngine
 		CD3D11_TEXTURE2D_DESC depthStencilTextureDesc (DXGI_FORMAT_D24_UNORM_S8_UINT, this->m_WindowWidth, this->m_WindowHeight);
 		depthStencilTextureDesc.MipLevels = 1;
 		depthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-		
+
 		hResult = this->m_Device->CreateTexture2D (&depthStencilTextureDesc, NULL, this->m_DepthStencilBuffer.GetAddressOf ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil buffer.");
 
@@ -298,7 +266,7 @@ namespace DXEngine
 	{
 		// Create a viewport
 		CD3D11_VIEWPORT viewport (0.0f, 0.0f, static_cast<float>(this->m_WindowWidth), static_cast<float>(this->m_WindowHeight));
-		
+
 		// Set viewport
 		this->m_DeviceContext->RSSetViewports (1, &viewport);
 	}
@@ -356,8 +324,8 @@ namespace DXEngine
 	// INITIALIZE SHADERS
 	// ------------------------------
 
-	void Graphics::InitializeShaders()
-{
+	void Graphics::InitializeShaders ()
+	{
 		std::wstring shaderfolder = DetermineShaderPath ();
 
 		D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -413,17 +381,16 @@ namespace DXEngine
 	// INITIALIZE SCENE
 	// ------------------------------
 
-	void Graphics::InitializeScene()
-{
+	void Graphics::InitializeScene ()
+	{
 		HRESULT hResult;
 
 		try
 		{
-			InitializeVertexAndIndexBuffers (hResult);
 			LoadTextures (hResult);
 			InitializeConstantBuffers (hResult);
-
 			InitializeMainCamera ();
+			InitializeModels ();
 		}
 		catch (COMException & exception)
 		{
@@ -431,49 +398,7 @@ namespace DXEngine
 		}
 	}
 
-	void Graphics::InitializeVertexAndIndexBuffers(HRESULT & hResult)
-	{
-		// SQUARE
-		Vertex vertexArray[] =
-		{
-			Vertex (-0.5f, -0.5f, -0.001f, 0.0f, 1.0f),  //FRONT Bottom Left	- [0]
-			Vertex (-0.5f,  0.5f, -0.001f, 0.0f, 0.0f),  //FRONT Top Left		- [1]
-			Vertex (0.5f,  0.5f, -0.001f, 1.0f, 0.0f),  //FRONT Top Right		- [2]
-			Vertex (0.5f, -0.5f, -0.001f, 1.0f, 1.0f),  //FRONT Bottom Right	- [3]
-
-			Vertex (-0.5f, -0.5f, 0.001f, 0.0f, 1.0f),  //BACK Bottom Left	- [0]
-			Vertex (-0.5f,  0.5f, 0.001f, 0.0f, 0.0f),  //BACK Top Left		- [1]
-			Vertex (0.5f,  0.5f, 0.001f, 1.0f, 0.0f),  //BACK Top Right		- [2]
-			Vertex (0.5f, -0.5f, 0.001f, 1.0f, 1.0f),  //BACK Bottom Right	- [3]
-		};
-
-		// SQUARE INDICES
-		DWORD indices[] =
-		{
-			0, 1, 2, // FRONT
-			0, 2, 3, // FRONT
-			4, 7, 6, // BACK
-			4, 6, 5, // BACK
-			3, 2, 6, // RIGHT SIDE
-			3, 6, 7, // RIGHT SIDE
-			4, 5, 1, // LEFT SIDE
-			4, 1, 0, // LEFT SIDE
-			1, 5, 6, // TOP
-			1, 6, 2, // TOP
-			0, 3, 7, // BOTTOM
-			0, 7, 4  // BOTTOM
-	};
-
-		// VERTEX BUFFER
-		hResult = this->m_VertexBuffer.Initialize (this->m_Device.Get (), vertexArray, ARRAYSIZE (vertexArray));
-		COM_ERROR_IF_FAILED (hResult, "Failed to create vertex buffer.");
-
-		// INDEX BUFFER
-		hResult = this->m_IndexBuffer.Initilization (m_Device.Get (), indices, ARRAYSIZE (indices));
-		COM_ERROR_IF_FAILED (hResult, "Failed to create indices buffer.");
-}
-
-	void Graphics::LoadTextures(HRESULT & hResult)
+	void Graphics::LoadTextures (HRESULT & hResult)
 	{
 		// LOAD TEXTURE
 		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_02.png", nullptr, m_FirstTexture.GetAddressOf ());
@@ -486,7 +411,7 @@ namespace DXEngine
 		COM_ERROR_IF_FAILED (hResult, "Failed to create Third WIC texture from file.");
 	}
 
-	void Graphics::InitializeConstantBuffers(HRESULT & hResult)
+	void Graphics::InitializeConstantBuffers (HRESULT & hResult)
 	{
 		hResult = m_ConstantVSBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex shader constant buffer.");
@@ -500,4 +425,14 @@ namespace DXEngine
 		m_Camera.SetPosition (0.0f, 0.0f, -5.0f);
 		m_Camera.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
 	}
+
+	void Graphics::InitializeModels ()
+	{
+		if (!m_Model.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_FirstTexture.Get (), this->m_ConstantVSBuffer))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
+			return;
+		}
+	}
+
 }
