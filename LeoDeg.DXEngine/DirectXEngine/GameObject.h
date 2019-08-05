@@ -10,7 +10,7 @@ namespace DXEngine
 	class GameObject
 	{
 	public:
-		Transform m_Transform;
+		DXEngine::Transform Transform;
 
 	private:
 

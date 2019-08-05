@@ -1,5 +1,6 @@
 #pragma once
 #include <DirectXMath.h>
+#include <string>
 using namespace DirectX;
 
 namespace DXEngine
@@ -10,21 +11,28 @@ namespace DXEngine
 		Transform ();
 		void SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ);
 
+		void SetLookAt (XMFLOAT3 position);
+		void SetLookAt (float x, float y, float z);
+
 		const XMVECTOR & GetPosVec () const;
-		const XMFLOAT3 & GetPosFloat3 () const;
+		const XMFLOAT3 & GetPos () const;
 
 		const XMVECTOR & GetRotVec () const;
-		const XMFLOAT3 & GetRotFloat3 () const;
+		const XMFLOAT3 & GetRot () const;
 
-		const XMVECTOR & GetUpVector () const;
-		const XMVECTOR & GetDownVector () const;
-		const XMVECTOR & GetLeftVector () const;
-		const XMVECTOR & GetRightVector () const;
-		const XMVECTOR & GetForwardVector () const;
-		const XMVECTOR & GetBackwardVector () const;
+		const XMVECTOR & GetVectorUp () const;
+		const XMVECTOR & GetVectorDown () const;
+		const XMVECTOR & GetVectorLeft () const;
+		const XMVECTOR & GetVectorRight () const;
+		const XMVECTOR & GetVectorForward () const;
+		const XMVECTOR & GetVectorBackward () const;
 
 		const XMMATRIX & GetViewMatrix () const;
+		const XMMATRIX & GetWorldMatrix () const;
 		const XMMATRIX & GetProjectionMatrix () const;
+
+		const std::string GetPosString () const;
+		const std::string GetRotString () const;
 
 		void SetPos (const XMVECTOR & pos);
 		void SetPos (const XMFLOAT3 & pos);
@@ -44,6 +52,7 @@ namespace DXEngine
 
 	private:
 		void UpdateViewMatrix ();
+		void UpdateWorldMatrix ();
 
 	public:
 		const XMVECTOR VECTOR_UP = XMVectorSet (0.0f, 1.0f, 0.0f, 0.0f);
@@ -53,15 +62,16 @@ namespace DXEngine
 		const XMVECTOR VECTOR_FORWARD = XMVectorSet (0.0f, 0.0f, 1.0f, 0.0f);
 		const XMVECTOR VECTOR_BACKWARD = XMVectorSet (0.0f, 0.0f, -1.0f, 0.0f);
 
+		XMVECTOR positionVec;
+		XMVECTOR rotationVec;
+
+		XMFLOAT3 position;
+		XMFLOAT3 rotation;
+
 	private:
 		XMMATRIX m_ViewMatrix;
+		XMMATRIX m_WorldMatrix;
 		XMMATRIX m_ProjectionMatrix;
-
-		XMVECTOR m_PosVector;
-		XMVECTOR m_RotVector;
-
-		XMFLOAT3 m_Pos;
-		XMFLOAT3 m_Rot;
 
 		XMVECTOR m_VectorUp;
 		XMVECTOR m_VectorDown;
@@ -69,5 +79,6 @@ namespace DXEngine
 		XMVECTOR m_VectorRight;
 		XMVECTOR m_VectorForward;
 		XMVECTOR m_VectorBackward;
+
 	};
 }

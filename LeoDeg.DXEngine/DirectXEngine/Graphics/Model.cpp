@@ -67,8 +67,7 @@ namespace DXEngine
 
 	void Model::Draw (const DirectX::XMMATRIX & viewProjectionMatrix)
 	{
-
-		this->m_ConstantBufferVS->m_Data.stateMatrix = this->m_WorldMatrix * viewProjectionMatrix;
+		this->m_ConstantBufferVS->m_Data.stateMatrix = this->Transform.GetWorldMatrix () * viewProjectionMatrix;
 		this->m_ConstantBufferVS->m_Data.stateMatrix = DirectX::XMMatrixTranspose (this->m_ConstantBufferVS->m_Data.stateMatrix); // to column major format
 		m_ConstantBufferVS->ApplyChanges ();
 

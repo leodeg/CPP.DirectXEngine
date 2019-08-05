@@ -37,9 +37,6 @@ namespace DXEngine
 		int GetFpsCount ();
 		std::string GetFpsString ();
 
-	public:
-		Camera m_Camera;
-
 	private:
 		// Initialize DirectX 
 		void InitializeDirectX (HWND hwnd);
@@ -66,6 +63,14 @@ namespace DXEngine
 		void InitializeConstantBuffers (HRESULT & hResult);
 		void InitializeMainCamera ();
 
+	public:
+		Camera m_Camera;
+
+		// Models
+		Model m_Model;
+		Model m_Model2;
+		Model m_Model3;
+
 	private:
 		// Properties
 		int m_WindowWidth = 0;
@@ -76,8 +81,7 @@ namespace DXEngine
 		int m_FpsCounter;
 		std::string m_FpsString;
 
-		// Models
-		Model m_Model;
+		
 
 		// Graphics Base
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // It is used to create resources

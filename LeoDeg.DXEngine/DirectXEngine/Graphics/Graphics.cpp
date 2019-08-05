@@ -71,9 +71,7 @@ namespace DXEngine
 		UINT offset = 0;
 
 		UpdateDeviceContext ();
-
 		DrawTextureObject ();
-
 		UpdateFPSCounter ();
 		RenderFonts ();
 		UpdateRenderingImGUI ();
@@ -134,15 +132,39 @@ namespace DXEngine
 		ImGui_ImplWin32_NewFrame ();
 		ImGui::NewFrame ();
 
-		XMFLOAT3 camPos = m_Camera.m_Transform.GetPosFloat3 ();
-		XMFLOAT3 camRot = m_Camera.m_Transform.GetRotFloat3 ();
-		std::string cameraPosString = "Camera Pos: x {" + std::to_string (camPos.x) + "}, y {" + std::to_string (camPos.y) + "}, z {" + std::to_string (camPos.z) + "}";
-		std::string cameraRotString = "Camera Rot: x {" + std::to_string (camRot.x) + "}, y {" + std::to_string (camRot.y) + "}, z {" + std::to_string (camRot.z) + "}";
+		static std::string cameraPosString = "Camera Pos: x {" + std::to_string (m_Camera.Transform.position.x) + "}, y {" + std::to_string (m_Camera.Transform.position.y) + "}, z {" + std::to_string (m_Camera.Transform.position.z) + "}";
+		static std::string cameraRotString = "Camera Rot: x {" + std::to_string (m_Camera.Transform.rotation.x) + "}, y {" + std::to_string (m_Camera.Transform.rotation.y) + "}, z {" + std::to_string (m_Camera.Transform.rotation.z) + "}";
 
 		// Create ImGui Test Window
 		ImGui::Begin ("Scene Properties");
-		ImGui::Text (cameraPosString.c_str ());
-		ImGui::Text (cameraRotString.c_str ());
+
+		ImGui::Text ("Camera:");
+		ImGui::Text ("position: ");
+		ImGui::SameLine (); ImGui::Text (m_Camera.Transform.GetPosString ().c_str ());
+		ImGui::Text ("rotation: ");
+		ImGui::SameLine (); ImGui::Text (m_Camera.Transform.GetRotString ().c_str ());
+
+		ImGui::Separator ();
+		ImGui::Text ("Model 1:");
+		ImGui::Text ("position: ");
+		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetPosString ().c_str ());
+		ImGui::Text ("rotation: ");
+		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetRotString ().c_str ());
+
+		ImGui::Separator ();
+		ImGui::Text ("Model 2:");
+		ImGui::Text ("position: ");
+		ImGui::SameLine (); ImGui::Text (m_Model2.Transform.GetPosString ().c_str ());
+		ImGui::Text ("rotation: ");
+		ImGui::SameLine (); ImGui::Text (m_Model2.Transform.GetRotString ().c_str ());
+
+		ImGui::Separator ();
+		ImGui::Text ("Model 3:");
+		ImGui::Text ("position: ");
+		ImGui::SameLine (); ImGui::Text (m_Model3.Transform.GetPosString ().c_str ());
+		ImGui::Text ("rotation: ");
+		ImGui::SameLine (); ImGui::Text (m_Model3.Transform.GetRotString ().c_str ());
+
 		ImGui::End ();
 
 		// Assemble Together Draw Data
@@ -154,7 +176,11 @@ namespace DXEngine
 
 	void Graphics::DrawTextureObject ()
 	{
-		m_Model.Draw (m_Camera.m_Transform.GetViewMatrix () * m_Camera.m_Transform.GetProjectionMatrix ());
+		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
+
+		m_Model.Draw (viewMatrix);
+		m_Model3.Draw (viewMatrix);
+		m_Model2.Draw (viewMatrix);
 	}
 
 	// ------------------------------
@@ -429,8 +455,8 @@ namespace DXEngine
 
 	void Graphics::InitializeMainCamera ()
 	{
-		m_Camera.m_Transform.SetPos (0.0f, 0.0f, -2.0f);
-		m_Camera.m_Transform.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
+		m_Camera.Transform.SetPos (0.0f, 0.0f, -10.0f);
+		m_Camera.Transform.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
 	}
 
 	void Graphics::InitializeModels ()
@@ -440,6 +466,21 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
 			return;
 		}
+		m_Model.Transform.SetPos (0.0f, 0.0f, 0.0f);
+
+		if (!m_Model2.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_SecondTexture.Get (), this->m_ConstantVSBuffer))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Models 2 failed to initialize");
+			return;
+		}
+		m_Model2.Transform.SetPos (0.0f, 0.0f, 5.0f);
+
+		if (!m_Model3.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ThirdTexture.Get (), this->m_ConstantVSBuffer))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Models 3 failed to initialize");
+			return;
+		}
+		m_Model3.Transform.SetPos (0.0f, 0.0f, -2.0f);
 	}
 
 }

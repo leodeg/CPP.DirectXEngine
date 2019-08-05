@@ -6,19 +6,22 @@ namespace DXEngine
 	void Transform::UpdateViewMatrix ()
 	{
 		// Calculate camera rotation matrix
-		XMMATRIX cameraRotationMat = XMMatrixRotationRollPitchYaw (this->m_Rot.x, this->m_Rot.y, this->m_Rot.z);
+		XMMATRIX cameraRotationMat = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z);
 		// Calculate unit Vector of camera target based off camera forward value transformed by camera rotation
 		XMVECTOR cameraTarget = XMVector3TransformCoord (this->VECTOR_FORWARD, cameraRotationMat);
 		// Adjust camera target to be offset by the camera's current position
-		cameraTarget += this->m_PosVector;
+		cameraTarget += this->positionVec;
 		// Calculate up direction based on current rotation
 		XMVECTOR upDirection = XMVector3TransformCoord (this->VECTOR_UP, cameraRotationMat);
 		// Calculate view direction
-		this->m_ViewMatrix = XMMatrixLookAtLH (this->m_PosVector, cameraTarget, upDirection);
+		this->m_ViewMatrix = XMMatrixLookAtLH (this->positionVec, cameraTarget, upDirection);
+	}
 
-		// Calculate rotation matrix (pitch, yaw)
-		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (0.0f, this->m_Rot.y, this->m_Rot.z);
-
+	void Transform::UpdateWorldMatrix ()
+	{
+		this->m_WorldMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z) * XMMatrixTranslation (this->position.x, this->position.y, this->position.z);
+		
+		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (0.0f, this->rotation.y, this->rotation.z);
 		// Calculate vectors about the camera
 		this->m_VectorUp = XMVector3TransformCoord (this->VECTOR_UP, vecRotationMatrix);
 		this->m_VectorDown = XMVector3TransformCoord (this->VECTOR_DOWN, vecRotationMatrix);
@@ -30,17 +33,54 @@ namespace DXEngine
 
 	Transform::Transform ()
 	{
-		this->m_Pos = XMFLOAT3 (0.0f, 0.0f, 0.0f);
-		this->m_Rot = XMFLOAT3 (0.0f, 0.0f, 0.0f);
-		this->m_PosVector = XMLoadFloat3 (&this->m_Pos);
-		this->m_RotVector = XMLoadFloat3 (&this->m_Rot);
+		this->position = XMFLOAT3 (0.0f, 0.0f, 0.0f);
+		this->rotation = XMFLOAT3 (0.0f, 0.0f, 0.0f);
+		this->positionVec = XMLoadFloat3 (&this->position);
+		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ)
 	{
 		float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
 		this->m_ProjectionMatrix = XMMatrixPerspectiveFovLH (fovRadians, aspectRation, nearZ, farZ);
+	}
+
+	void Transform::SetLookAt (float x, float y, float z)
+	{
+		this->SetLookAt (XMFLOAT3 (x, y, z));
+	}
+
+	void Transform::SetLookAt (XMFLOAT3 position)
+	{
+		// If the same position
+		if (position.x == this->position.x
+			&& position.y == this->position.y
+			&& position.z == this->position.z)
+		{
+			return;
+		}
+
+		// Calculate direction
+		position.x = this->position.x - position.x;
+		position.y = this->position.y - position.y;
+		position.z = this->position.z - position.z;
+
+		// Calculate pitch rotation
+		float pitch = 0.0f;
+		if (position.y != 0.0f)
+		{
+			const float distance = static_cast<float>(sqrt (pow (position.x, 2) + pow (position.z, 2)));
+			pitch = static_cast<float>(atan (position.y / distance));
+		}
+
+		// Calculate yaw
+		float yaw = 0.0f;
+		if (position.x != 0.0f) yaw = static_cast<float>(atan (position.x / position.z));
+		if (position.z > 0) yaw += XM_PI;
+
+		SetRot (pitch, yaw, 0.0f);
 	}
 
 #pragma region GETTERS
@@ -50,57 +90,72 @@ namespace DXEngine
 		return this->m_ViewMatrix;
 	}
 
+	const XMMATRIX & Transform::GetWorldMatrix () const
+	{
+		return this->m_WorldMatrix;
+	}
+
 	const XMMATRIX & Transform::GetProjectionMatrix () const
 	{
 		return this->m_ProjectionMatrix;
 	}
 
-	const XMVECTOR & Transform::GetPosVec () const
+	const std::string Transform::GetPosString () const
 	{
-		return this->m_PosVector;
+		return "x {" + std::to_string (position.x) + "}, y {" + std::to_string (position.y) + "}, z {" + std::to_string (position.z) + "}";
 	}
 
-	const XMFLOAT3 & Transform::GetPosFloat3 () const
+	const std::string Transform::GetRotString () const
 	{
-		return this->m_Pos;
+		return "x {" + std::to_string (rotation.x) + "}, y {" + std::to_string (rotation.y) + "}, z {" + std::to_string (rotation.z) + "}";
+	}
+
+	const XMVECTOR & Transform::GetPosVec () const
+	{
+		return this->positionVec;
+	}
+
+	const XMFLOAT3 & Transform::GetPos () const
+	{
+		return this->position;
 	}
 
 	const XMVECTOR & Transform::GetRotVec () const
 	{
-		return this->m_RotVector;
+		return this->rotationVec;
 	}
 
-	const XMFLOAT3 & Transform::GetRotFloat3 () const
+	const XMFLOAT3 & Transform::GetRot () const
 	{
-		return this->m_Rot;
+		return this->rotation;
 	}
 
-	const XMVECTOR & Transform::GetUpVector () const
+	const XMVECTOR & Transform::GetVectorUp () const
 	{
 		return this->m_VectorUp;
 	}
 
-	const XMVECTOR & Transform::GetDownVector () const
+	const XMVECTOR & Transform::GetVectorDown () const
 	{
 		return this->m_VectorDown;
 	}
 
-	const XMVECTOR & Transform::GetForwardVector () const
+	const XMVECTOR & Transform::GetVectorForward () const
 	{
 		return this->m_VectorForward;
 	}
 
-	const XMVECTOR & Transform::GetRightVector () const
+	const XMVECTOR & Transform::GetVectorRight () const
 	{
 		return this->m_VectorRight;
 	}
 
-	const XMVECTOR & Transform::GetLeftVector () const
+	const XMVECTOR & Transform::GetVectorLeft () const
 	{
 		return this->m_VectorLeft;
 	}
 
-	const XMVECTOR & Transform::GetBackwardVector () const
+	const XMVECTOR & Transform::GetVectorBackward () const
 	{
 		return this->m_VectorBackward;
 	}
@@ -111,49 +166,55 @@ namespace DXEngine
 
 	void Transform::SetPos (const XMVECTOR & pos)
 	{
-		XMStoreFloat3 (&this->m_Pos, pos);
-		this->m_PosVector = pos;
+		XMStoreFloat3 (&this->position, pos);
+		this->positionVec = pos;
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::SetPos (const XMFLOAT3 & pos)
 	{
-		this->m_Pos = pos;
-		this->m_PosVector = XMLoadFloat3 (&this->m_Pos);
+		this->position = pos;
+		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::SetPos (float x, float y, float z)
 	{
-		this->m_Pos = XMFLOAT3 (x, y, z);
-		this->m_PosVector = XMLoadFloat3 (&this->m_Pos);
+		this->position = XMFLOAT3 (x, y, z);
+		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::AdjustPos (const XMVECTOR & pos)
 	{
-		this->m_PosVector += pos;
-		XMStoreFloat3 (&this->m_Pos, this->m_PosVector);
+		this->positionVec += pos;
+		XMStoreFloat3 (&this->position, this->positionVec);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::AdjustPos (const XMFLOAT3 & pos)
 	{
-		this->m_Pos.x += pos.x;
-		this->m_Pos.y += pos.y;
-		this->m_Pos.z += pos.z;
-		this->m_PosVector = XMLoadFloat3 (&this->m_Pos);
+		this->position.x += pos.x;
+		this->position.y += pos.y;
+		this->position.z += pos.z;
+		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::AdjustPos (float x, float y, float z)
 	{
-		this->m_Pos.x += x;
-		this->m_Pos.y += y;
-		this->m_Pos.z += z;
+		this->position.x += x;
+		this->position.y += y;
+		this->position.z += z;
 
-		this->m_PosVector = XMLoadFloat3 (&this->m_Pos);
+		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 #pragma endregion
@@ -162,49 +223,55 @@ namespace DXEngine
 
 	void Transform::SetRot (const XMVECTOR & rot)
 	{
-		XMStoreFloat3 (&this->m_Rot, rot);
-		this->m_RotVector = rot;
+		XMStoreFloat3 (&this->rotation, rot);
+		this->rotationVec = rot;
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::SetRot (const XMFLOAT3 & rot)
 	{
-		this->m_Rot = rot;
-		this->m_RotVector = XMLoadFloat3 (&this->m_Rot);
+		this->rotation = rot;
+		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::SetRot (float x, float y, float z)
 	{
-		this->m_Rot = XMFLOAT3 (x, y, z);
-		this->m_RotVector = XMLoadFloat3 (&this->m_Rot);
+		this->rotation = XMFLOAT3 (x, y, z);
+		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::AdjustRot (const XMVECTOR & rot)
 	{
-		this->m_RotVector += rot;
-		XMStoreFloat3 (&this->m_Rot, this->m_RotVector);
+		this->rotationVec += rot;
+		XMStoreFloat3 (&this->rotation, this->rotationVec);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::AdjustRot (const XMFLOAT3 & rot)
 	{
-		this->m_Rot.x += rot.x;
-		this->m_Rot.y += rot.y;
-		this->m_Rot.z += rot.z;
-		this->m_RotVector = XMLoadFloat3 (&this->m_Pos);
+		this->rotation.x += rot.x;
+		this->rotation.y += rot.y;
+		this->rotation.z += rot.z;
+		this->rotationVec = XMLoadFloat3 (&this->position);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 	void Transform::AdjustRot (float x, float y, float z)
 	{
-		this->m_Rot.x += x;
-		this->m_Rot.y += y;
-		this->m_Rot.z += z;
+		this->rotation.x += x;
+		this->rotation.y += y;
+		this->rotation.z += z;
 
-		this->m_RotVector = XMLoadFloat3 (&this->m_Rot);
+		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateViewMatrix ();
+		this->UpdateWorldMatrix ();
 	}
 
 #pragma endregion

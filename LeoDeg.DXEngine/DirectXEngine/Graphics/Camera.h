@@ -10,9 +10,6 @@ namespace DXEngine
 	public:
 		Camera () { }
 
-		void SetLookAt (XMFLOAT3 position);
-		void SetLookAt (float x, float y, float z);
-
 		void SetCameraMoveSpeed (float speed);
 		float GetCameraMoveSpeed () const;
 
