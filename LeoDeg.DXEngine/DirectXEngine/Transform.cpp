@@ -20,7 +20,7 @@ namespace DXEngine
 	void Transform::UpdateWorldMatrix ()
 	{
 		this->m_WorldMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z) * XMMatrixTranslation (this->position.x, this->position.y, this->position.z);
-		
+
 		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (0.0f, this->rotation.y, this->rotation.z);
 		// Calculate vectors about the camera
 		this->m_VectorUp = XMVector3TransformCoord (this->VECTOR_UP, vecRotationMatrix);
@@ -37,8 +37,10 @@ namespace DXEngine
 		this->rotation = XMFLOAT3 (0.0f, 0.0f, 0.0f);
 		this->positionVec = XMLoadFloat3 (&this->position);
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ)
@@ -164,36 +166,49 @@ namespace DXEngine
 
 #pragma region POSITION
 
+	void Transform::ResetPos ()
+	{
+		this->SetPos (0.0f, 0.0f, 0.0f);
+	}
+
 	void Transform::SetPos (const XMVECTOR & pos)
 	{
 		XMStoreFloat3 (&this->position, pos);
 		this->positionVec = pos;
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::SetPos (const XMFLOAT3 & pos)
 	{
 		this->position = pos;
 		this->positionVec = XMLoadFloat3 (&this->position);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::SetPos (float x, float y, float z)
 	{
 		this->position = XMFLOAT3 (x, y, z);
 		this->positionVec = XMLoadFloat3 (&this->position);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::AdjustPos (const XMVECTOR & pos)
 	{
 		this->positionVec += pos;
 		XMStoreFloat3 (&this->position, this->positionVec);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::AdjustPos (const XMFLOAT3 & pos)
@@ -202,8 +217,10 @@ namespace DXEngine
 		this->position.y += pos.y;
 		this->position.z += pos.z;
 		this->positionVec = XMLoadFloat3 (&this->position);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::AdjustPos (float x, float y, float z)
@@ -213,44 +230,59 @@ namespace DXEngine
 		this->position.z += z;
 
 		this->positionVec = XMLoadFloat3 (&this->position);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 #pragma endregion
 
 #pragma region ROTATION
 
+	void Transform::ResetRot ()
+	{
+		this->SetRot (0.0f, 0.0f, 0.0f);
+	}
+
 	void Transform::SetRot (const XMVECTOR & rot)
 	{
 		XMStoreFloat3 (&this->rotation, rot);
 		this->rotationVec = rot;
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::SetRot (const XMFLOAT3 & rot)
 	{
 		this->rotation = rot;
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::SetRot (float x, float y, float z)
 	{
 		this->rotation = XMFLOAT3 (x, y, z);
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::AdjustRot (const XMVECTOR & rot)
 	{
 		this->rotationVec += rot;
 		XMStoreFloat3 (&this->rotation, this->rotationVec);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::AdjustRot (const XMFLOAT3 & rot)
@@ -259,8 +291,10 @@ namespace DXEngine
 		this->rotation.y += rot.y;
 		this->rotation.z += rot.z;
 		this->rotationVec = XMLoadFloat3 (&this->position);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 	void Transform::AdjustRot (float x, float y, float z)
@@ -270,8 +304,10 @@ namespace DXEngine
 		this->rotation.z += z;
 
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
-		this->UpdateViewMatrix ();
 		this->UpdateWorldMatrix ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
 	}
 
 #pragma endregion

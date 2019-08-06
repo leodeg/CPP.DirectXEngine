@@ -9,17 +9,21 @@ namespace DXEngine
 	{
 	public:
 		Transform ();
-		void SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ);
 
+		// Help methods
+		void SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ);
 		void SetLookAt (XMFLOAT3 position);
 		void SetLookAt (float x, float y, float z);
 
+		// Position
 		const XMVECTOR & GetPosVec () const;
 		const XMFLOAT3 & GetPos () const;
 
+		// Rotation
 		const XMVECTOR & GetRotVec () const;
 		const XMFLOAT3 & GetRot () const;
 
+		// Default Vectors
 		const XMVECTOR & GetVectorUp () const;
 		const XMVECTOR & GetVectorDown () const;
 		const XMVECTOR & GetVectorLeft () const;
@@ -27,13 +31,17 @@ namespace DXEngine
 		const XMVECTOR & GetVectorForward () const;
 		const XMVECTOR & GetVectorBackward () const;
 
+		// Matrix
 		const XMMATRIX & GetViewMatrix () const;
 		const XMMATRIX & GetWorldMatrix () const;
 		const XMMATRIX & GetProjectionMatrix () const;
 
+		// Strings
 		const std::string GetPosString () const;
 		const std::string GetRotString () const;
 
+		// Position
+		void ResetPos ();
 		void SetPos (const XMVECTOR & pos);
 		void SetPos (const XMFLOAT3 & pos);
 		void SetPos (float x, float y, float z);
@@ -42,6 +50,8 @@ namespace DXEngine
 		void AdjustPos (const XMFLOAT3 & pos);
 		void AdjustPos (float x, float y, float z);
 
+		// Rotation
+		void ResetRot ();
 		void SetRot (const XMVECTOR & rot);
 		void SetRot (const XMFLOAT3 & rot);
 		void SetRot (float x, float y, float z);
@@ -67,6 +77,8 @@ namespace DXEngine
 
 		XMFLOAT3 position;
 		XMFLOAT3 rotation;
+
+		bool updateViewMatrix = false;
 
 	private:
 		XMMATRIX m_ViewMatrix;

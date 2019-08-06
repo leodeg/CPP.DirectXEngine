@@ -2,7 +2,7 @@
 
 namespace DXEngine
 {
-	bool Model::Initialize (ID3D11Device * device, ID3D11DeviceContext * deviceContext, ID3D11ShaderResourceView * texture, ConstantBuffer<CB_VS_vertexshader> & constantBufferVS)
+	bool Model::Initialize (const std::string filePath, ID3D11Device * device, ID3D11DeviceContext * deviceContext, ID3D11ShaderResourceView * texture, ConstantBuffer<CB_VS_vertexshader> & constantBufferVS)
 	{
 		this->m_Device = device;
 		this->m_DeviceContext = deviceContext;
@@ -11,44 +11,8 @@ namespace DXEngine
 
 		try
 		{
-			// SQUARE
-			Vertex vertexArray[] =
-			{
-				Vertex (-0.5f, -0.5f, -0.001f, 0.0f, 1.0f),  //FRONT Bottom Left	- [0]
-				Vertex (-0.5f,  0.5f, -0.001f, 0.0f, 0.0f),  //FRONT Top Left		- [1]
-				Vertex (0.5f,  0.5f, -0.001f, 1.0f, 0.0f),  //FRONT Top Right		- [2]
-				Vertex (0.5f, -0.5f, -0.001f, 1.0f, 1.0f),  //FRONT Bottom Right	- [3]
-
-				Vertex (-0.5f, -0.5f, 0.001f, 0.0f, 1.0f),  //BACK Bottom Left	- [0]
-				Vertex (-0.5f,  0.5f, 0.001f, 0.0f, 0.0f),  //BACK Top Left		- [1]
-				Vertex (0.5f,  0.5f, 0.001f, 1.0f, 0.0f),  //BACK Top Right		- [2]
-				Vertex (0.5f, -0.5f, 0.001f, 1.0f, 1.0f),  //BACK Bottom Right	- [3]
-			};
-
-			// VERTEX BUFFER
-			HRESULT hResult = this->m_VertexBuffer.Initialize (this->m_Device, vertexArray, ARRAYSIZE (vertexArray));
-			COM_ERROR_IF_FAILED (hResult, "Failed to create vertex buffer.");
-
-			// SQUARE INDICES
-			DWORD indices[] =
-			{
-				0, 1, 2, // FRONT
-				0, 2, 3, // FRONT
-				4, 7, 6, // BACK
-				4, 6, 5, // BACK
-				3, 2, 6, // RIGHT SIDE
-				3, 6, 7, // RIGHT SIDE
-				4, 5, 1, // LEFT SIDE
-				4, 1, 0, // LEFT SIDE
-				1, 5, 6, // TOP
-				1, 6, 2, // TOP
-				0, 3, 7, // BOTTOM
-				0, 7, 4  // BOTTOM
-			};
-
-			// INDEX BUFFER
-			hResult = this->m_IndexBuffer.Initilization (this->m_Device, indices, ARRAYSIZE (indices));
-			COM_ERROR_IF_FAILED (hResult, "Failed to create indices buffer.");
+			if (!this->LoadModel (filePath))
+				return false;
 		}
 		catch (COMException & exception)
 		{
@@ -56,6 +20,8 @@ namespace DXEngine
 			return false;
 		}
 
+		this->Transform.ResetPos ();
+		this->Transform.ResetRot ();
 		this->UpdateWorldMatrix ();
 		return true;
 	}
@@ -74,15 +40,79 @@ namespace DXEngine
 		this->m_DeviceContext->VSSetConstantBuffers (0, 1, this->m_ConstantBufferVS->GetAddressOf ());
 		this->m_DeviceContext->PSSetShaderResources (0, 1, &this->m_Texture);
 
-		UINT offset = 0;
-		this->m_DeviceContext->IASetIndexBuffer (m_IndexBuffer.GetBuffer (), DXGI_FORMAT_R32_UINT, 0);
-		this->m_DeviceContext->IASetVertexBuffers (0, 1, m_VertexBuffer.GetAddressOf (), m_VertexBuffer.GetStridePtr (), &offset);
-
-		this->m_DeviceContext->DrawIndexed (m_IndexBuffer.GetBufferSize (), 0, 0);
+		for (int i = 0; i < m_Meshes.size (); i++)
+		{
+			m_Meshes[i].Draw ();
+		}
 	}
 
 	void Model::UpdateWorldMatrix ()
 	{
 		this->m_WorldMatrix = DirectX::XMMatrixIdentity ();
 	}
+
+#pragma region ASSIMP
+
+	bool Model::LoadModel (const std::string & filePath)
+	{
+		Assimp::Importer importer;
+		const aiScene * pScene = importer.ReadFile (filePath, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+
+		if (pScene == nullptr)
+		{
+			COM_ERROR_IF_FAILED (NULL, "Failed to read file to load a model.");
+			return false;
+		}
+
+		this->ProcessNode (pScene->mRootNode, pScene);
+		return true;
+	}
+
+	void Model::ProcessNode (aiNode * pNode, const aiScene * pScene)
+	{
+		for (UINT i = 0; i < pNode->mNumMeshes; i++)
+		{
+			aiMesh * pMesh = pScene->mMeshes[pNode->mMeshes[i]];
+			m_Meshes.push_back (this->ProcessMesh (pMesh, pScene));
+		}
+
+		for (UINT i = 0; i < pNode->mNumChildren; i++)
+		{
+			this->ProcessNode (pNode->mChildren[i], pScene);
+		}
+	}
+
+	Mesh Model::ProcessMesh (aiMesh * pMesh, const aiScene * pScene)
+	{
+		std::vector<Vertex> vertices;
+		std::vector<DWORD> indices;
+
+		for (UINT i = 0; i < pMesh->mNumVertices; i++)
+		{
+			Vertex vertex;
+
+			vertex.m_Position.x = pMesh->mVertices[i].x;
+			vertex.m_Position.y = pMesh->mVertices[i].y;
+			vertex.m_Position.z = pMesh->mVertices[i].z;
+
+			if (pMesh->mTextureCoords[0])
+			{
+				vertex.m_TexCoord.x = static_cast<float>(pMesh->mTextureCoords[0][i].x);
+				vertex.m_TexCoord.y = static_cast<float>(pMesh->mTextureCoords[0][i].y);
+			}
+
+			vertices.push_back (vertex);
+		}
+
+		for (UINT i = 0; i < pMesh->mNumFaces; i++)
+		{
+			aiFace face = pMesh->mFaces[i];
+			for (UINT j = 0; j < face.mNumIndices; j++)
+				indices.push_back (face.mIndices[i]);
+		}
+
+		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices);
+	}
+
+#pragma endregion
 }

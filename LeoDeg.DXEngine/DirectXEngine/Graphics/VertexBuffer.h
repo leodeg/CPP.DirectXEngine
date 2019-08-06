@@ -2,6 +2,7 @@
 
 #ifndef VERTEX_BUFFER_H
 #define VERTEX_BUFFER_H
+
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <memory>
@@ -16,11 +17,28 @@ namespace DXEngine
 		VertexBuffer (const VertexBuffer<T> & rhs);
 
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
-		std::unique_ptr<UINT> m_Stride;
+		std::shared_ptr<UINT> m_Stride;
 		UINT m_BufferSize = 0;
 
 	public:
 		VertexBuffer () {}
+
+		/*VertexBuffer (const VertexBuffer<T> & rhs)
+		{
+			this->m_Buffer = rhs.m_Buffer;
+			this->m_BufferSize = rhs.m_BufferSize;
+			this->m_Stride = rhs.m_Stride;
+		}*/
+
+		VertexBuffer<T> & operator=(const VertexBuffer<T> & a)
+		{
+			this->m_Buffer = a.m_Buffer;
+			this->m_BufferSize = a.m_BufferSize;
+			this->m_Stride = a.m_Stride;
+
+			return *this;
+		}
+
 
 		ID3D11Buffer * GetBuffer () const
 		{
@@ -53,7 +71,7 @@ namespace DXEngine
 				m_Buffer.Reset ();
 
 			if (this->m_Stride.get () == nullptr)
-				this->m_Stride = std::make_unique<UINT> (sizeof (T));
+				this->m_Stride = std::make_shared<UINT> (sizeof (T));
 
 			this->m_BufferSize = numOfVertices;
 

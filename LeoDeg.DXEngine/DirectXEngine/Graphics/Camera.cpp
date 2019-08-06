@@ -2,7 +2,10 @@
 
 namespace DXEngine
 {
-	
+	Camera::Camera ()
+	{
+		Transform.updateViewMatrix = true;
+	}
 
 	void Camera::SetCameraMoveSpeed (float speed)
 	{

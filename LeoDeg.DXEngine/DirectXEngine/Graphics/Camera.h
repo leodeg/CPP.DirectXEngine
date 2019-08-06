@@ -8,7 +8,7 @@ namespace DXEngine
 	class Camera : public GameObject
 	{
 	public:
-		Camera () { }
+		Camera ();
 
 		void SetCameraMoveSpeed (float speed);
 		float GetCameraMoveSpeed () const;

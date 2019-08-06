@@ -83,7 +83,7 @@ namespace DXEngine
 	void Graphics::UpdateDeviceContext ()
 	{
 		// Colors
-		float bgColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		float bgColor[] = { 0.0f, 0.0f, 0.4f, 1.0f };
 
 		// Clear frame
 		this->m_DeviceContext->ClearRenderTargetView (this->m_RenderTargetView.Get (), bgColor);
@@ -132,9 +132,6 @@ namespace DXEngine
 		ImGui_ImplWin32_NewFrame ();
 		ImGui::NewFrame ();
 
-		static std::string cameraPosString = "Camera Pos: x {" + std::to_string (m_Camera.Transform.position.x) + "}, y {" + std::to_string (m_Camera.Transform.position.y) + "}, z {" + std::to_string (m_Camera.Transform.position.z) + "}";
-		static std::string cameraRotString = "Camera Rot: x {" + std::to_string (m_Camera.Transform.rotation.x) + "}, y {" + std::to_string (m_Camera.Transform.rotation.y) + "}, z {" + std::to_string (m_Camera.Transform.rotation.z) + "}";
-
 		// Create ImGui Test Window
 		ImGui::Begin ("Scene Properties");
 
@@ -179,8 +176,8 @@ namespace DXEngine
 		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
 
 		m_Model.Draw (viewMatrix);
-		m_Model3.Draw (viewMatrix);
-		m_Model2.Draw (viewMatrix);
+		/*m_Model3.Draw (viewMatrix);
+		m_Model2.Draw (viewMatrix);*/
 	}
 
 	// ------------------------------
@@ -461,21 +458,21 @@ namespace DXEngine
 
 	void Graphics::InitializeModels ()
 	{
-		if (!m_Model.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_FirstTexture.Get (), this->m_ConstantVSBuffer))
+		if (!m_Model.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_FirstTexture.Get (), this->m_ConstantVSBuffer))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
 			return;
 		}
 		m_Model.Transform.SetPos (0.0f, 0.0f, 0.0f);
 
-		if (!m_Model2.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_SecondTexture.Get (), this->m_ConstantVSBuffer))
+		if (!m_Model2.Initialize ("Data\\3DModels\\sylvanas_obj.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_SecondTexture.Get (), this->m_ConstantVSBuffer))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Models 2 failed to initialize");
 			return;
 		}
 		m_Model2.Transform.SetPos (0.0f, 0.0f, 5.0f);
 
-		if (!m_Model3.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ThirdTexture.Get (), this->m_ConstantVSBuffer))
+		if (!m_Model3.Initialize ("Data\\3DModels\\sylvanas_fbx.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ThirdTexture.Get (), this->m_ConstantVSBuffer))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Models 3 failed to initialize");
 			return;
