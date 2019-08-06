@@ -107,8 +107,11 @@ namespace DXEngine
 		for (UINT i = 0; i < pMesh->mNumFaces; i++)
 		{
 			aiFace face = pMesh->mFaces[i];
+
 			for (UINT j = 0; j < face.mNumIndices; j++)
-				indices.push_back (face.mIndices[i]);
+			{
+				indices.push_back (face.mIndices[j]);
+			}
 		}
 
 		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices);

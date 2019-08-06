@@ -24,5 +24,8 @@ namespace DXEngine
 		void UpdateMouseEvents ();
 		void UpdateKeyboardEvents ();
 		void UpdateCameraMovement ();
+
+		void Rotate3DModel ();
+
 	};
 }

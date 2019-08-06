@@ -43,6 +43,7 @@ namespace DXEngine
 		UpdateMouseEvents ();
 		UpdateKeyboardEvents ();
 		UpdateCameraMovement ();
+		Rotate3DModel ();
 	}
 
 	void Engine::UpdateDeltaTime ()
@@ -87,22 +88,6 @@ namespace DXEngine
 
 	void Engine::UpdateCameraMovement ()
 	{
-		if (m_Keyboard.KeyIsPressed ('1'))
-		{
-			this->m_Graphics.m_Model.Transform.AdjustPos (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
-		}
-
-		if (m_Keyboard.KeyIsPressed ('2'))
-		{
-			this->m_Graphics.m_Model2.Transform.AdjustPos (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
-		}
-
-		if (m_Keyboard.KeyIsPressed ('3'))
-		{
-			this->m_Graphics.m_Model3.Transform.AdjustPos (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
-		}
-
-
 		if (m_Keyboard.KeyIsPressed ('E'))
 		{
 			this->m_Graphics.m_Camera.Transform.AdjustPos (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
@@ -137,4 +122,18 @@ namespace DXEngine
 				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
 		}
 	}
+
+	void Engine::Rotate3DModel ()
+	{
+		if (m_Keyboard.KeyIsPressed ('1'))
+		{
+			this->m_Graphics.m_Model.Transform.AdjustRot (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime * 0.2f, 0.0f);
+		}
+
+		if (m_Keyboard.KeyIsPressed ('2'))
+		{
+			this->m_Graphics.m_Model.Transform.AdjustRot (0.0f, -this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime * 0.2f, 0.0f);
+		}
+	}
+
 }

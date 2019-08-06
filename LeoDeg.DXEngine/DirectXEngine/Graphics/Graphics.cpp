@@ -142,25 +142,11 @@ namespace DXEngine
 		ImGui::SameLine (); ImGui::Text (m_Camera.Transform.GetRotString ().c_str ());
 
 		ImGui::Separator ();
-		ImGui::Text ("Model 1:");
+		ImGui::Text ("Model:");
 		ImGui::Text ("position: ");
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetPosString ().c_str ());
 		ImGui::Text ("rotation: ");
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetRotString ().c_str ());
-
-		ImGui::Separator ();
-		ImGui::Text ("Model 2:");
-		ImGui::Text ("position: ");
-		ImGui::SameLine (); ImGui::Text (m_Model2.Transform.GetPosString ().c_str ());
-		ImGui::Text ("rotation: ");
-		ImGui::SameLine (); ImGui::Text (m_Model2.Transform.GetRotString ().c_str ());
-
-		ImGui::Separator ();
-		ImGui::Text ("Model 3:");
-		ImGui::Text ("position: ");
-		ImGui::SameLine (); ImGui::Text (m_Model3.Transform.GetPosString ().c_str ());
-		ImGui::Text ("rotation: ");
-		ImGui::SameLine (); ImGui::Text (m_Model3.Transform.GetRotString ().c_str ());
 
 		ImGui::End ();
 
@@ -176,8 +162,6 @@ namespace DXEngine
 		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
 
 		m_Model.Draw (viewMatrix);
-		/*m_Model3.Draw (viewMatrix);
-		m_Model2.Draw (viewMatrix);*/
 	}
 
 	// ------------------------------
@@ -431,14 +415,8 @@ namespace DXEngine
 	void Graphics::LoadTextures (HRESULT & hResult)
 	{
 		// LOAD TEXTURE
-		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_02.png", nullptr, m_FirstTexture.GetAddressOf ());
+		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\3DModels\\nanosuit\\leg_showroom_spec.png", nullptr, m_FirstTexture.GetAddressOf ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to create First WIC texture from file.");
-
-		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_01.jpg", nullptr, m_SecondTexture.GetAddressOf ());
-		COM_ERROR_IF_FAILED (hResult, "Failed to create Second WIC texture from file.");
-
-		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\Textures\\tex_03.jpg", nullptr, m_SecondTexture.GetAddressOf ());
-		COM_ERROR_IF_FAILED (hResult, "Failed to create Third WIC texture from file.");
 	}
 
 	void Graphics::InitializeConstantBuffers (HRESULT & hResult)
@@ -463,21 +441,6 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
 			return;
 		}
-		m_Model.Transform.SetPos (0.0f, 0.0f, 0.0f);
-
-		if (!m_Model2.Initialize ("Data\\3DModels\\sylvanas_obj.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_SecondTexture.Get (), this->m_ConstantVSBuffer))
-		{
-			COM_ERROR_IF_FAILED (NULL, "Models 2 failed to initialize");
-			return;
-		}
-		m_Model2.Transform.SetPos (0.0f, 0.0f, 5.0f);
-
-		if (!m_Model3.Initialize ("Data\\3DModels\\sylvanas_fbx.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ThirdTexture.Get (), this->m_ConstantVSBuffer))
-		{
-			COM_ERROR_IF_FAILED (NULL, "Models 3 failed to initialize");
-			return;
-		}
-		m_Model3.Transform.SetPos (0.0f, 0.0f, -2.0f);
 	}
 
 }
