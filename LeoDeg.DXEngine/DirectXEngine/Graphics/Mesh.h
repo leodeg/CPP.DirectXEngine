@@ -9,12 +9,15 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+//#include <vector>
+#include "Texture.h"
+
 namespace DXEngine
 {
 	class Mesh
 	{
 	public:
-		Mesh (ID3D11Device * device, ID3D11DeviceContext * deviceContext, std::vector<Vertex> & vertices, std::vector<DWORD> & indices);
+		Mesh (ID3D11Device * device, ID3D11DeviceContext * deviceContext, std::vector<Vertex> & vertices, std::vector<DWORD> & indices, std::vector<Texture> textures);
 		Mesh (const Mesh & mesh);
 		void Draw ();
 
@@ -23,5 +26,6 @@ namespace DXEngine
 		VertexBuffer<Vertex> m_VertexBuffer;
 		IndexBuffer m_IndexBuffer;
 
+		std::vector<Texture> m_Textures;
 	};
 }

@@ -436,11 +436,17 @@ namespace DXEngine
 
 	void Graphics::InitializeModels ()
 	{
-		if (!m_Model.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_FirstTexture.Get (), this->m_ConstantVSBuffer))
+		if (!m_Model.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
 			return;
 		}
+
+		/*if (!m_Model.Initialize ("Data\\3DModels\\sylvanas_fbx.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
+			return;
+		}*/
 	}
 
 }

@@ -17,28 +17,27 @@ namespace DXEngine
 		VertexBuffer (const VertexBuffer<T> & rhs);
 
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
-		std::shared_ptr<UINT> m_Stride;
-		UINT m_BufferSize = 0;
+		UINT m_Stride = sizeof (T);
+		UINT m_VertexCount = 0;
 
 	public:
 		VertexBuffer () {}
 
-		/*VertexBuffer (const VertexBuffer<T> & rhs)
-		{
-			this->m_Buffer = rhs.m_Buffer;
-			this->m_BufferSize = rhs.m_BufferSize;
-			this->m_Stride = rhs.m_Stride;
-		}*/
-
 		VertexBuffer<T> & operator=(const VertexBuffer<T> & a)
 		{
 			this->m_Buffer = a.m_Buffer;
-			this->m_BufferSize = a.m_BufferSize;
+			this->m_VertexCount = a.m_VertexCount;
 			this->m_Stride = a.m_Stride;
 
 			return *this;
 		}
 
+		void SetBuffer (const VertexBuffer<T> & rhs)
+		{
+			this->m_Buffer = rhs.m_Buffer;
+			this->m_VertexCount = rhs.m_VertexCount;
+			this->m_Stride = rhs.m_Stride;
+		}
 
 		ID3D11Buffer * GetBuffer () const
 		{
@@ -50,36 +49,33 @@ namespace DXEngine
 			return m_Buffer.GetAddressOf ();
 		}
 
-		UINT GetBufferSize () const
+		UINT GetVertexCount () const
 		{
-			return this->BufferSize;
+			return this->m_VertexCount;
 		}
 
 		const UINT GetStride () const
 		{
-			return *this->m_Stride.get ();
+			return this->m_Stride;
 		}
 
 		const UINT * GetStridePtr () const
 		{
-			return this->m_Stride.get ();
+			return &this->m_Stride;
 		}
 
-		HRESULT Initialize (ID3D11Device * device, T * data, UINT numOfVertices)
+		HRESULT Initialize (ID3D11Device * device, T * data, UINT vertexCount)
 		{
 			if (m_Buffer.Get () != nullptr)
 				m_Buffer.Reset ();
 
-			if (this->m_Stride.get () == nullptr)
-				this->m_Stride = std::make_shared<UINT> (sizeof (T));
-
-			this->m_BufferSize = numOfVertices;
-
+			this->m_VertexCount = vertexCount;
+			 
 			D3D11_BUFFER_DESC vertexBufferDesc;
 			ZeroMemory (&vertexBufferDesc, sizeof (vertexBufferDesc));
 
 			vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			vertexBufferDesc.ByteWidth = sizeof (T) * numOfVertices;
+			vertexBufferDesc.ByteWidth = m_Stride * vertexCount;
 			vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 			vertexBufferDesc.CPUAccessFlags = 0;
 			vertexBufferDesc.MiscFlags = 0;

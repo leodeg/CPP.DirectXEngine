@@ -13,10 +13,24 @@ private:
 	IndexBuffer (const IndexBuffer & rhs);
 	
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
-	UINT m_BufferSize = 0;
+	UINT m_IndexCount = 0;
 
 public:
 	IndexBuffer () { }
+
+	IndexBuffer & operator=(const IndexBuffer & a)
+	{
+		this->m_Buffer = a.m_Buffer;
+		this->m_IndexCount = a.m_IndexCount;
+
+		return *this;
+	}
+
+	void SetBuffer (const IndexBuffer & rhs)
+	{
+		this->m_Buffer = rhs.m_Buffer;
+		this->m_IndexCount = rhs.m_IndexCount;
+	}
 
 	ID3D11Buffer * GetBuffer () const
 	{
@@ -28,9 +42,9 @@ public:
 		return this->m_Buffer.GetAddressOf ();
 	}
 
-	UINT GetBufferSize () const
+	UINT GetIndexCount () const
 	{
-		return this->m_BufferSize;
+		return this->m_IndexCount;
 	}
 
 	HRESULT Initilization (ID3D11Device * device, DWORD * data, UINT numOfIndices)
@@ -38,7 +52,7 @@ public:
 		if (m_Buffer.Get () != nullptr)
 			m_Buffer.Reset ();
 
-		this->m_BufferSize = numOfIndices;
+		this->m_IndexCount = numOfIndices;
 
 		D3D11_BUFFER_DESC indexBufferDesc;
 		ZeroMemory (&indexBufferDesc, sizeof (indexBufferDesc));

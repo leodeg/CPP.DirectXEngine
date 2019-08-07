@@ -2,11 +2,10 @@
 
 namespace DXEngine
 {
-	bool Model::Initialize (const std::string filePath, ID3D11Device * device, ID3D11DeviceContext * deviceContext, ID3D11ShaderResourceView * texture, ConstantBuffer<CB_VS_vertexshader> & constantBufferVS)
+	bool Model::Initialize (const std::string filePath, ID3D11Device * device, ID3D11DeviceContext * deviceContext, ConstantBuffer<CB_VS_vertexshader> & constantBufferVS)
 	{
 		this->m_Device = device;
 		this->m_DeviceContext = deviceContext;
-		this->m_Texture = texture;
 		this->m_ConstantBufferVS = &constantBufferVS;
 
 		try
@@ -22,13 +21,7 @@ namespace DXEngine
 
 		this->Transform.ResetPos ();
 		this->Transform.ResetRot ();
-		this->UpdateWorldMatrix ();
 		return true;
-	}
-
-	void Model::SetTexture (ID3D11ShaderResourceView * texture)
-	{
-		this->m_Texture = texture;
 	}
 
 	void Model::Draw (const DirectX::XMMATRIX & viewProjectionMatrix)
@@ -38,17 +31,11 @@ namespace DXEngine
 		m_ConstantBufferVS->ApplyChanges ();
 
 		this->m_DeviceContext->VSSetConstantBuffers (0, 1, this->m_ConstantBufferVS->GetAddressOf ());
-		this->m_DeviceContext->PSSetShaderResources (0, 1, &this->m_Texture);
 
 		for (int i = 0; i < m_Meshes.size (); i++)
 		{
 			m_Meshes[i].Draw ();
 		}
-	}
-
-	void Model::UpdateWorldMatrix ()
-	{
-		this->m_WorldMatrix = DirectX::XMMatrixIdentity ();
 	}
 
 #pragma region ASSIMP
@@ -114,7 +101,9 @@ namespace DXEngine
 			}
 		}
 
-		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices);
+		std::vector<Texture> textures;
+		textures.push_back (Texture (this->m_Device, Colors::UNHANDLED_TEXTURE_COLOR, aiTextureType::aiTextureType_DIFFUSE));
+		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices, textures);
 	}
 
 #pragma endregion

@@ -88,38 +88,46 @@ namespace DXEngine
 
 	void Engine::UpdateCameraMovement ()
 	{
+		float moveSpeed = this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime;
+
+		if (m_Keyboard.KeyIsPressed (VK_SHIFT))
+		{
+			moveSpeed *= 7;
+		}
+
+		if (m_Keyboard.KeyIsPressed (VK_CONTROL))
+		{
+			moveSpeed *= 0.3;
+		}
+
 		if (m_Keyboard.KeyIsPressed ('E'))
 		{
-			this->m_Graphics.m_Camera.Transform.AdjustPos (0.0f, this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
+			this->m_Graphics.m_Camera.Transform.AdjustPos (0.0f, moveSpeed, 0.0f);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('Q'))
 		{
-			this->m_Graphics.m_Camera.Transform.AdjustPos (0.0f, -this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime, 0.0f);
+			this->m_Graphics.m_Camera.Transform.AdjustPos (0.0f, -moveSpeed, 0.0f);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('A'))
 		{
-			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorLeft ()
-				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
+			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorLeft () * moveSpeed);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('D'))
 		{
-			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorRight ()
-				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
+			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorRight () * moveSpeed);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('W'))
 		{
-			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorForward ()
-				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
+			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorForward () * moveSpeed);
 		}
 
 		if (m_Keyboard.KeyIsPressed ('S'))
 		{
-			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorBackward ()
-				* this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime);
+			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorBackward () * moveSpeed);
 		}
 	}
 

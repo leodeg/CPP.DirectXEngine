@@ -21,7 +21,7 @@ namespace DXEngine
 	{
 		this->m_WorldMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z) * XMMatrixTranslation (this->position.x, this->position.y, this->position.z);
 
-		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (0.0f, this->rotation.y, this->rotation.z);
+		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z);
 		// Calculate vectors about the camera
 		this->m_VectorUp = XMVector3TransformCoord (this->VECTOR_UP, vecRotationMatrix);
 		this->m_VectorDown = XMVector3TransformCoord (this->VECTOR_DOWN, vecRotationMatrix);

@@ -2,9 +2,10 @@
 
 namespace DXEngine
 {
-	Mesh::Mesh (ID3D11Device * device, ID3D11DeviceContext * deviceContext, std::vector<Vertex> & vertices, std::vector<DWORD> & indices)
+	Mesh::Mesh (ID3D11Device * device, ID3D11DeviceContext * deviceContext, std::vector<Vertex> & vertices, std::vector<DWORD> & indices, std::vector<Texture> textures)
 	{
 		this->m_DeviceContext = deviceContext;
+		this->m_Textures = textures;
 
 		HRESULT hResult = this->m_VertexBuffer.Initialize (device, vertices.data (), static_cast<UINT>(vertices.size ()));
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex buffer for mesh.");
@@ -18,13 +19,24 @@ namespace DXEngine
 		this->m_DeviceContext = mesh.m_DeviceContext;
 		this->m_IndexBuffer = mesh.m_IndexBuffer;
 		this->m_VertexBuffer = mesh.m_VertexBuffer;
+		this->m_Textures = mesh.m_Textures;
 	}
 
 	void Mesh::Draw ()
 	{
 		UINT offset = 0;
+
+		for (int i = 0; i < m_Textures.size (); i++)
+		{
+			if (m_Textures[i].GetType () == aiTextureType::aiTextureType_DIFFUSE)
+			{
+				this->m_DeviceContext->PSGetShaderResources (0, 1, m_Textures[i].GetTextureResourceViewAddress ());
+				break;
+			}
+		}
+
 		this->m_DeviceContext->IASetVertexBuffers (0, 1, this->m_VertexBuffer.GetAddressOf (), this->m_VertexBuffer.GetStridePtr (), &offset);
-		this->m_DeviceContext->IASetIndexBuffer (this->m_IndexBuffer.GetBuffer (), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, offset);
-		this->m_DeviceContext->DrawIndexed (this->m_IndexBuffer.GetBufferSize (), 0, 0);
+		this->m_DeviceContext->IASetIndexBuffer (this->m_IndexBuffer.GetBuffer (), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
+		this->m_DeviceContext->DrawIndexed (this->m_IndexBuffer.GetIndexCount (), 0, 0);
 	}
 }
