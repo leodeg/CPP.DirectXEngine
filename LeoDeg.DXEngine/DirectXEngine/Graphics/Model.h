@@ -15,6 +15,7 @@ namespace DXEngine
 		bool LoadModel (const std::string & filePath);
 		void ProcessNode (aiNode * pNode, const aiScene * pScene);
 		Mesh ProcessMesh (aiMesh * pMesh, const aiScene * pScene);
+		std::vector<Texture> LoadMaterialTextures (aiMaterial * pMaterial, aiTextureType textureType, const aiScene * pScene);
 
 	private:
 		std::vector<Mesh> m_Meshes;

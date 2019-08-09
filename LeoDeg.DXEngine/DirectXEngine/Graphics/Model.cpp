@@ -74,6 +74,7 @@ namespace DXEngine
 		std::vector<Vertex> vertices;
 		std::vector<DWORD> indices;
 
+		// Display vertices
 		for (UINT i = 0; i < pMesh->mNumVertices; i++)
 		{
 			Vertex vertex;
@@ -91,6 +92,7 @@ namespace DXEngine
 			vertices.push_back (vertex);
 		}
 
+		// Display indices
 		for (UINT i = 0; i < pMesh->mNumFaces; i++)
 		{
 			aiFace face = pMesh->mFaces[i];
@@ -101,9 +103,46 @@ namespace DXEngine
 			}
 		}
 
+		// Display textures
 		std::vector<Texture> textures;
-		textures.push_back (Texture (this->m_Device, Colors::UNHANDLED_TEXTURE_COLOR, aiTextureType::aiTextureType_DIFFUSE));
+		aiMaterial * material = pScene->mMaterials[pMesh->mMaterialIndex];
+		std::vector<Texture> diffuseTextures = LoadMaterialTextures (material, aiTextureType::aiTextureType_DIFFUSE, pScene);
+		textures.insert (textures.end (), diffuseTextures.begin (), diffuseTextures.end ());
+
 		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices, textures);
+	}
+
+	std::vector<Texture> Model::LoadMaterialTextures (aiMaterial * pMaterial, aiTextureType textureType, const aiScene * pScene)
+	{
+		std::vector<Texture> materialTextures;
+		TextureStorageType storeType = TextureStorageType::Invalid;
+		UINT textureCount = pMaterial->GetTextureCount (textureType);
+
+		if (textureCount == 0)
+		{
+			storeType = TextureStorageType::None;
+			aiColor3D aiColor (0.0f, 0.0f, 0.0f);
+
+			switch (textureType)
+			{
+			case aiTextureType_DIFFUSE:
+				pMaterial->Get (AI_MATKEY_COLOR_DIFFUSE, aiColor);
+
+				if (aiColor.IsBlack ())
+				{
+					materialTextures.push_back (Texture (this->m_Device, Colors::UNLOADED_TEXTURE_COLOR, textureType));
+					return materialTextures;
+				}
+
+				materialTextures.push_back (Texture (this->m_Device, Color (aiColor.r * 255, aiColor.g * 255, aiColor.b * 255), textureType));
+				return materialTextures;
+			}
+		}
+		else
+		{
+			materialTextures.push_back (Texture (this->m_Device, Colors::UNHANDLED_TEXTURE_COLOR, aiTextureType::aiTextureType_DIFFUSE));
+			return materialTextures;
+		}
 	}
 
 #pragma endregion
