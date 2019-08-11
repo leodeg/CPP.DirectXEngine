@@ -42,6 +42,8 @@ namespace DXEngine
 
 	bool Model::LoadModel (const std::string & filePath)
 	{
+		this->m_Directory = StringHelper::GetDrectoryFromPath (filePath);
+
 		Assimp::Importer importer;
 		const aiScene * pScene = importer.ReadFile (filePath, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
 
@@ -140,9 +142,74 @@ namespace DXEngine
 		}
 		else
 		{
-			materialTextures.push_back (Texture (this->m_Device, Colors::UNHANDLED_TEXTURE_COLOR, aiTextureType::aiTextureType_DIFFUSE));
-			return materialTextures;
+			for (UINT i = 0; i < textureCount; i++)
+			{
+				aiString path;
+				pMaterial->GetTexture (textureType, i, &path);
+				TextureStorageType storeType = DetermineTextureStorageType (pScene, pMaterial, i, textureType);
+
+				switch (storeType)
+				{
+				case TextureStorageType::Disk:
+					std::string fileName = this->m_Directory + '\\' + path.C_Str ();
+					Texture diskTexture (this->m_Device, fileName, textureType);
+					materialTextures.push_back (diskTexture);
+					break;
+				}
+			}
 		}
+
+		if (materialTextures.size () == 0)
+		{
+			materialTextures.push_back (Texture (this->m_Device, Colors::UNHANDLED_TEXTURE_COLOR, aiTextureType::aiTextureType_DIFFUSE));
+		}
+
+		return materialTextures;
+	}
+
+	DXEngine::TextureStorageType Model::DetermineTextureStorageType (const aiScene * pScene, aiMaterial * pMaterial, unsigned int index, aiTextureType textureType)
+	{
+		if (pMaterial->GetTextureCount (textureType) == 0)
+			return TextureStorageType::None;
+
+		aiString path;
+		pMaterial->GetTexture (textureType, index, &path);
+		std::string texturePath = path.C_Str ();
+
+		if (texturePath[0] == '*')
+		{
+			if (pScene->mTextures[0]->mHeight == 0)
+			{
+				return TextureStorageType::EmbeddedIndexCompressed;
+			}
+			else
+			{
+				assert ("SUPPORT DOES NOT EXIST YET FOR INDEXED NON COMPRESSED TEXTURES!" && 0);
+				return TextureStorageType::EmbeddedIndexNonCompressed;
+			}
+		}
+
+		const aiTexture * pTexture = pScene->GetEmbeddedTexture (texturePath.c_str ());
+
+		if (pTexture != nullptr)
+		{
+			if (pTexture->mHeight == 0)
+			{
+				return TextureStorageType::EmbeddedCompressed;
+			}
+			else
+			{
+				assert ("SUPPORT DOES NOT EXIST YET FOR EMBEDDED NON COMPRESSED TEXTURES!" && 0);
+				return TextureStorageType::EmbeddedNonCompressed;
+			}
+		}
+
+		if (texturePath.find ('.') != std::string::npos)
+		{
+			return TextureStorageType::Disk;
+		}
+
+		return TextureStorageType::None;
 	}
 
 #pragma endregion

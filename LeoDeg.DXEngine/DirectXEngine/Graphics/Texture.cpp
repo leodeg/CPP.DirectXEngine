@@ -12,6 +12,33 @@ namespace DXEngine
 		this->InitializeColorTexture (device, colorData, width, height, type);
 	}
 
+	Texture::Texture (ID3D11Device * device, const std::string & filePath, aiTextureType type)
+	{
+		this->m_Type = type;
+		
+		if (StringHelper::GetFileExtension (filePath) == ".dds")
+		{
+			HRESULT hResult = DirectX::CreateDDSTextureFromFile (device, StringHelper::StringToWide (filePath).c_str (), m_Texture.GetAddressOf (), m_TextureView.GetAddressOf ());
+
+			if (FAILED (hResult))
+			{
+				this->Initialize1x1ColorTexture (device, Colors::UNLOADED_TEXTURE_COLOR, type);
+			}
+			return;
+		}
+		else
+		{
+			HRESULT hResult = DirectX::CreateWICTextureFromFile (device, StringHelper::StringToWide (filePath).c_str (), m_Texture.GetAddressOf (), m_TextureView.GetAddressOf ());
+
+			if (FAILED (hResult))
+			{
+				this->Initialize1x1ColorTexture (device, Colors::UNLOADED_TEXTURE_COLOR, type);
+			}
+			return;
+		}
+
+	}
+
 	aiTextureType Texture::GetType ()
 	{
 		return this->m_Type;

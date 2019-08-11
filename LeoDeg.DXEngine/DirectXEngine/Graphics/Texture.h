@@ -5,7 +5,12 @@
 #include <assimp/material.h>
 
 #include "..\\\ErrorLogger.h"
+#include "..\\\StringHelper.h"
 #include "Color.h"
+
+#include <WICTextureLoader.h>
+#include <DDSTextureLoader.h>
+
 
 namespace DXEngine
 {
@@ -25,6 +30,8 @@ namespace DXEngine
 	public:
 		Texture (ID3D11Device * device, const Color & color, aiTextureType type);
 		Texture (ID3D11Device * device, const Color * colorData, UINT width, UINT height, aiTextureType type);
+		Texture (ID3D11Device * device, const std::string & filePath, aiTextureType type);
+
 
 		aiTextureType GetType ();
 		ID3D11ShaderResourceView * GetTextureResourceView ();
