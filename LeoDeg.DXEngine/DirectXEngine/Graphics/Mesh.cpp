@@ -30,7 +30,7 @@ namespace DXEngine
 		{
 			if (m_Textures[i].GetType () == aiTextureType::aiTextureType_DIFFUSE)
 			{
-				this->m_DeviceContext->PSGetShaderResources (0, 1, m_Textures[i].GetTextureResourceViewAddress ());
+				this->m_DeviceContext->PSSetShaderResources (0, 1, m_Textures[i].GetTextureResourceViewAddress ());
 				break;
 			}
 		}
