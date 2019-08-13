@@ -162,6 +162,7 @@ namespace DXEngine
 		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
 
 		m_Model.Draw (viewMatrix);
+		//m_GameObject.Draw (viewMatrix);
 	}
 
 	// ------------------------------
@@ -441,6 +442,13 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
 			return;
 		}
+
+		//if (!m_GameObject.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
+		//{
+		//	COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
+		//	return;
+		//}
+
 
 		/*if (!m_Model.Initialize ("Data\\3DModels\\sylvanas_fbx.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		{

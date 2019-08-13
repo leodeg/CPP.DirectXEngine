@@ -5,7 +5,7 @@ namespace DXEngine
 {
 	struct CB_VS_vertexshader
 	{
-		DirectX::XMMATRIX stateMatrix;
+		DirectX::XMMATRIX matrix;
 	};
 
 	struct CB_PS_pixelshader

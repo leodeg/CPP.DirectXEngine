@@ -26,23 +26,20 @@ namespace DXEngine
 
 	void Model::Draw (const DirectX::XMMATRIX & viewProjectionMatrix)
 	{
-		this->m_ConstantBufferVS->m_Data.stateMatrix = this->Transform.GetWorldMatrix () * viewProjectionMatrix;
-		this->m_ConstantBufferVS->m_Data.stateMatrix = DirectX::XMMatrixTranspose (this->m_ConstantBufferVS->m_Data.stateMatrix); // to column major format
+		this->m_ConstantBufferVS->GetData ().matrix = this->Transform.GetWorldMatrix () * viewProjectionMatrix;
+		this->m_ConstantBufferVS->GetData ().matrix = DirectX::XMMatrixTranspose (this->m_ConstantBufferVS->GetData ().matrix); // to column major format
 		m_ConstantBufferVS->ApplyChanges ();
-
 		this->m_DeviceContext->VSSetConstantBuffers (0, 1, this->m_ConstantBufferVS->GetAddressOf ());
 
 		for (int i = 0; i < m_Meshes.size (); i++)
-		{
 			m_Meshes[i].Draw ();
-		}
 	}
 
 #pragma region ASSIMP
 
 	bool Model::LoadModel (const std::string & filePath)
 	{
-		this->m_Directory = StringHelper::GetDrectoryFromPath (filePath);
+		this->m_ModelDirectory = StringHelper::GetDrectoryFromPath (filePath);
 
 		Assimp::Importer importer;
 		const aiScene * pScene = importer.ReadFile (filePath, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
@@ -53,25 +50,27 @@ namespace DXEngine
 			return false;
 		}
 
-		this->ProcessNode (pScene->mRootNode, pScene);
+		this->ProcessNode (pScene->mRootNode, pScene, DirectX::XMMatrixIdentity ());
 		return true;
 	}
 
-	void Model::ProcessNode (aiNode * pNode, const aiScene * pScene)
+	void Model::ProcessNode (aiNode * pNode, const aiScene * pScene, const XMMATRIX & parentTransformMatrix)
 	{
+		XMMATRIX nodeTransformMatrix = XMMatrixTranspose (XMMATRIX (&pNode->mTransformation.a1)) * parentTransformMatrix;
+
 		for (UINT i = 0; i < pNode->mNumMeshes; i++)
 		{
 			aiMesh * pMesh = pScene->mMeshes[pNode->mMeshes[i]];
-			m_Meshes.push_back (this->ProcessMesh (pMesh, pScene));
+			m_Meshes.push_back (this->ProcessMesh (pMesh, pScene, nodeTransformMatrix));
 		}
 
 		for (UINT i = 0; i < pNode->mNumChildren; i++)
 		{
-			this->ProcessNode (pNode->mChildren[i], pScene);
+			this->ProcessNode (pNode->mChildren[i], pScene, nodeTransformMatrix);
 		}
 	}
 
-	Mesh Model::ProcessMesh (aiMesh * pMesh, const aiScene * pScene)
+	Mesh Model::ProcessMesh (aiMesh * pMesh, const aiScene * pScene, const XMMATRIX & transformMatrix)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<DWORD> indices;
@@ -111,7 +110,7 @@ namespace DXEngine
 		std::vector<Texture> diffuseTextures = LoadMaterialTextures (material, aiTextureType::aiTextureType_DIFFUSE, pScene);
 		textures.insert (textures.end (), diffuseTextures.begin (), diffuseTextures.end ());
 
-		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices, textures);
+		return Mesh (this->m_Device, this->m_DeviceContext, vertices, indices, textures, transformMatrix);
 	}
 
 	std::vector<Texture> Model::LoadMaterialTextures (aiMaterial * pMaterial, aiTextureType textureType, const aiScene * pScene)
@@ -120,27 +119,29 @@ namespace DXEngine
 		TextureStorageType storeType = TextureStorageType::Invalid;
 		UINT textureCount = pMaterial->GetTextureCount (textureType);
 
-		if (textureCount == 0)
+		if (textureCount == 0) // No textures
 		{
 			storeType = TextureStorageType::None;
 			aiColor3D aiColor (0.0f, 0.0f, 0.0f);
 
 			switch (textureType)
 			{
-			case aiTextureType_DIFFUSE:
-				pMaterial->Get (AI_MATKEY_COLOR_DIFFUSE, aiColor);
-
-				if (aiColor.IsBlack ())
+				case aiTextureType_DIFFUSE:
 				{
-					materialTextures.push_back (Texture (this->m_Device, Colors::UNLOADED_TEXTURE_COLOR, textureType));
+					pMaterial->Get (AI_MATKEY_COLOR_DIFFUSE, aiColor);
+
+					if (aiColor.IsBlack ())
+					{
+						materialTextures.push_back (Texture (this->m_Device, Colors::UNLOADED_TEXTURE_COLOR, textureType));
+						return materialTextures;
+					}
+
+					materialTextures.push_back (Texture (this->m_Device, Color (aiColor.r * 255, aiColor.g * 255, aiColor.b * 255), textureType));
 					return materialTextures;
 				}
-
-				materialTextures.push_back (Texture (this->m_Device, Color (aiColor.r * 255, aiColor.g * 255, aiColor.b * 255), textureType));
-				return materialTextures;
 			}
 		}
-		else
+		else // Model has a textures
 		{
 			for (UINT i = 0; i < textureCount; i++)
 			{
@@ -150,11 +151,30 @@ namespace DXEngine
 
 				switch (storeType)
 				{
-				case TextureStorageType::Disk:
-					std::string fileName = this->m_Directory + '\\' + path.C_Str ();
-					Texture diskTexture (this->m_Device, fileName, textureType);
-					materialTextures.push_back (diskTexture);
-					break;
+					case TextureStorageType::EmbeddedIndexCompressed:
+					{
+						int index = GetTextureIndex (&path);
+
+						materialTextures.push_back (Texture (this->m_Device, reinterpret_cast<uint8_t *> (pScene->mTextures[index]->pcData), pScene->mTextures[index]->mWidth, textureType));
+
+						break;
+					}
+					case TextureStorageType::EmbeddedCompressed:
+					{
+						const aiTexture * pTexture = pScene->GetEmbeddedTexture (path.C_Str ());
+
+						materialTextures.push_back (Texture (this->m_Device, reinterpret_cast<uint8_t *> (pTexture->pcData), pTexture->mWidth, textureType));
+
+						break;
+					}
+					case TextureStorageType::Disk:
+					{
+						std::string fileName = this->m_ModelDirectory + '\\' + path.C_Str ();
+						Texture diskTexture (this->m_Device, fileName, textureType);
+
+						materialTextures.push_back (diskTexture);
+						break;
+					}
 				}
 			}
 		}
@@ -210,6 +230,12 @@ namespace DXEngine
 		}
 
 		return TextureStorageType::None;
+	}
+
+	int Model::GetTextureIndex (aiString * pString)
+	{
+		assert (pString->length >= 2);
+		return atoi (&pString->C_Str ()[1]);
 	}
 
 #pragma endregion

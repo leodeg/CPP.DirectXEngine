@@ -39,6 +39,13 @@ namespace DXEngine
 
 	}
 
+	Texture::Texture (ID3D11Device * device, const uint8_t * pData, size_t size, aiTextureType type)
+	{
+		this->m_Type = type;
+		HRESULT hResult = DirectX::CreateWICTextureFromMemory (device, pData, size, this->m_Texture.GetAddressOf (), this->m_TextureView.GetAddressOf ());
+		COM_ERROR_IF_FAILED (hResult, "Failed to create Texture from memory.");
+	}
+
 	aiTextureType Texture::GetType ()
 	{
 		return this->m_Type;

@@ -15,6 +15,8 @@
 #include "ImGui\\imgui_impl_win32.h"
 #include "ImGui\\imgui_impl_dx11.h"
 
+#include "..\\\RenderableGameObject.h"
+
 namespace DXEngine
 {
 	class Graphics
@@ -65,6 +67,7 @@ namespace DXEngine
 
 	public:
 		Camera m_Camera;
+		RenderableGameObject m_GameObject;
 
 		// Models
 		Model m_Model;

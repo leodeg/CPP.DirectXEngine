@@ -16,13 +16,23 @@ namespace DXEngine
 	private:
 		ConstantBuffer (const ConstantBuffer<T> & rhs);
 
+	private:
 		Microsoft::WRL::ComPtr<ID3D11Buffer> m_Buffer;
 		ID3D11DeviceContext * m_DeviceContext = nullptr;
+		T m_Data;
 
 	public:
 		ConstantBuffer () { }
 
-		T m_Data;
+		T & GetData ()
+		{
+			return this->m_Data;
+		}
+
+		void SetData (T data)
+		{
+			this->m_Data = data;
+		}
 
 		ID3D11Buffer * GetBuffer () const
 		{
