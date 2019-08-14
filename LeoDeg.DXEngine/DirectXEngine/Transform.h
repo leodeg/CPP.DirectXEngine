@@ -24,12 +24,12 @@ namespace DXEngine
 		const XMFLOAT3 & GetRot () const;
 
 		// Default Vectors
-		const XMVECTOR & GetVectorUp () const;
-		const XMVECTOR & GetVectorDown () const;
-		const XMVECTOR & GetVectorLeft () const;
-		const XMVECTOR & GetVectorRight () const;
-		const XMVECTOR & GetVectorForward () const;
-		const XMVECTOR & GetVectorBackward () const;
+		const XMVECTOR & GetVectorUp (bool omitYAxis = false) const;
+		const XMVECTOR & GetVectorDown (bool omitYAxis = false) const;
+		const XMVECTOR & GetVectorLeft (bool omitYAxis = false) const;
+		const XMVECTOR & GetVectorRight (bool omitYAxis = false) const;
+		const XMVECTOR & GetVectorForward (bool omitYAxis = false) const;
+		const XMVECTOR & GetVectorBackward (bool omitYAxis = false) const;
 
 		// Matrix
 		const XMMATRIX & GetViewMatrix () const;
@@ -64,6 +64,8 @@ namespace DXEngine
 		void UpdateViewMatrix ();
 		void UpdateWorldMatrix ();
 
+		void UpdateDirectionVectors ();
+
 	public:
 		const XMVECTOR VECTOR_UP = XMVectorSet (0.0f, 1.0f, 0.0f, 0.0f);
 		const XMVECTOR VECTOR_DOWN = XMVectorSet (0.0f, -1.0f, 0.0f, 0.0f);
@@ -91,6 +93,13 @@ namespace DXEngine
 		XMVECTOR m_VectorRight;
 		XMVECTOR m_VectorForward;
 		XMVECTOR m_VectorBackward;
+
+		XMVECTOR m_VectorUpNoY;
+		XMVECTOR m_VectorDownNoY;
+		XMVECTOR m_VectorLeftNoY;
+		XMVECTOR m_VectorRightNoY;
+		XMVECTOR m_VectorForwardNoY;
+		XMVECTOR m_VectorBackwardNoY;
 
 	};
 }

@@ -83,6 +83,10 @@ namespace DXEngine
 
 	void Graphics::UpdateDeviceContext ()
 	{
+		this->m_ConstantPSLightBuffer.GetData ().dynamicLightColor = m_Light.lightColor;
+		this->m_ConstantPSLightBuffer.GetData ().dynamicLightStrength = m_Light.lightStrength;
+		this->m_ConstantPSLightBuffer.GetData ().dynamicLightPos = m_Light.GetTransform ().GetPos ();
+
 		this->m_ConstantPSLightBuffer.ApplyChanges ();
 		this->m_DeviceContext->PSSetConstantBuffers (0, 1, this->m_ConstantPSLightBuffer.GetAddressOf ());
 
@@ -152,6 +156,14 @@ namespace DXEngine
 		ImGui::Text ("rotation: ");
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetRotString ().c_str ());
 
+		ImGui::Separator ();
+		ImGui::Text ("Light:");
+		ImGui::Text ("position: ");
+		ImGui::SameLine (); ImGui::Text (m_Light.GetTransform ().GetPosString ().c_str ());
+		ImGui::Text ("rotation: ");
+		ImGui::SameLine (); ImGui::Text (m_Light.GetTransform ().GetRotString ().c_str ());
+
+
 		ImGui::End ();
 
 		ImGui::Begin ("Scene Lighting Properties");
@@ -174,6 +186,9 @@ namespace DXEngine
 		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
 
 		m_Model.Draw (viewMatrix);
+
+		//this->m_DeviceContext->PSSetShader (m_PixelShaderNoLight.GetShader (), NULL, 0);
+		m_Light.DrawLightModel (viewMatrix);
 		//m_GameObject.Draw (viewMatrix);
 	}
 
@@ -375,6 +390,12 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader initialization.");
 			return;
 		}
+
+		if (!m_PixelShader.Initialize (this->m_Device, shaderfolder + L"pixelshader_nolight.cso"))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader No Light initialization.");
+			return;
+		}
 	}
 
 	std::wstring Graphics::DetermineShaderPath ()
@@ -459,18 +480,11 @@ namespace DXEngine
 			return;
 		}
 
-		//if (!m_GameObject.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
-		//{
-		//	COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
-		//	return;
-		//}
-
-
-		/*if (!m_Model.Initialize ("Data\\3DModels\\sylvanas_fbx.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
+		if (!m_Light.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		{
-			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
+			COM_ERROR_IF_FAILED (NULL, "Light failed to initialize");
 			return;
-		}*/
+		}
 	}
 
 }

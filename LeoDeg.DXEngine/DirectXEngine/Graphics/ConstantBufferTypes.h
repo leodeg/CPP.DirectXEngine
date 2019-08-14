@@ -15,5 +15,10 @@ namespace DXEngine
 	{
 		DirectX::XMFLOAT3 ambientLightColor; // 12 bytes
 		float ambientLightStrength; // 4 byte
+
+		DirectX::XMFLOAT3 dynamicLightColor; // 12 bytes
+		float dynamicLightStrength; // 4 byte
+
+		DirectX::XMFLOAT3 dynamicLightPos; // 12 bytes
 	};
 }

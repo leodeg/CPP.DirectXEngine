@@ -2,6 +2,20 @@
 
 namespace DXEngine
 {
+	Transform::Transform ()
+	{
+		this->position = XMFLOAT3 (0.0f, 0.0f, 0.0f);
+		this->rotation = XMFLOAT3 (0.0f, 0.0f, 0.0f);
+
+		this->positionVec = XMLoadFloat3 (&this->position);
+		this->rotationVec = XMLoadFloat3 (&this->rotation);
+
+		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
+
+		if (updateViewMatrix)
+			this->UpdateViewMatrix ();
+	}
 
 	void Transform::UpdateViewMatrix ()
 	{
@@ -20,27 +34,26 @@ namespace DXEngine
 	void Transform::UpdateWorldMatrix ()
 	{
 		this->m_WorldMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z) * XMMatrixTranslation (this->position.x, this->position.y, this->position.z);
+	}
 
+	void Transform::UpdateDirectionVectors ()
+	{
 		XMMATRIX vecRotationMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z);
-		// Calculate vectors about the camera
 		this->m_VectorUp = XMVector3TransformCoord (this->VECTOR_UP, vecRotationMatrix);
 		this->m_VectorDown = XMVector3TransformCoord (this->VECTOR_DOWN, vecRotationMatrix);
 		this->m_VectorLeft = XMVector3TransformCoord (this->VECTOR_LEFT, vecRotationMatrix);
 		this->m_VectorRight = XMVector3TransformCoord (this->VECTOR_RIGHT, vecRotationMatrix);
 		this->m_VectorForward = XMVector3TransformCoord (this->VECTOR_FORWARD, vecRotationMatrix);
 		this->m_VectorBackward = XMVector3TransformCoord (this->VECTOR_BACKWARD, vecRotationMatrix);
-	}
 
-	Transform::Transform ()
-	{
-		this->position = XMFLOAT3 (0.0f, 0.0f, 0.0f);
-		this->rotation = XMFLOAT3 (0.0f, 0.0f, 0.0f);
-		this->positionVec = XMLoadFloat3 (&this->position);
-		this->rotationVec = XMLoadFloat3 (&this->rotation);
-		this->UpdateWorldMatrix ();
+		XMMATRIX vecRotationMatrixNoY = XMMatrixRotationRollPitchYaw (0.0f, this->rotation.y, this->rotation.z);
+		this->m_VectorUpNoY = XMVector3TransformCoord (this->VECTOR_UP, vecRotationMatrixNoY);
+		this->m_VectorDownNoY = XMVector3TransformCoord (this->VECTOR_DOWN, vecRotationMatrixNoY);
+		this->m_VectorLeftNoY = XMVector3TransformCoord (this->VECTOR_LEFT, vecRotationMatrixNoY);
+		this->m_VectorRightNoY = XMVector3TransformCoord (this->VECTOR_RIGHT, vecRotationMatrixNoY);
+		this->m_VectorForwardNoY = XMVector3TransformCoord (this->VECTOR_FORWARD, vecRotationMatrixNoY);
+		this->m_VectorBackwardNoY = XMVector3TransformCoord (this->VECTOR_BACKWARD, vecRotationMatrixNoY);
 
-		if (updateViewMatrix)
-			this->UpdateViewMatrix ();
 	}
 
 	void Transform::SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ)
@@ -132,33 +145,45 @@ namespace DXEngine
 		return this->rotation;
 	}
 
-	const XMVECTOR & Transform::GetVectorUp () const
+	const XMVECTOR & Transform::GetVectorUp (bool omitYAxis) const
 	{
+		if (omitYAxis)
+			return this->m_VectorUpNoY;
 		return this->m_VectorUp;
 	}
 
-	const XMVECTOR & Transform::GetVectorDown () const
+	const XMVECTOR & Transform::GetVectorDown (bool omitYAxis) const
 	{
+		if (omitYAxis)
+			return this->m_VectorDownNoY;
 		return this->m_VectorDown;
 	}
 
-	const XMVECTOR & Transform::GetVectorForward () const
+	const XMVECTOR & Transform::GetVectorForward (bool omitYAxis) const
 	{
+		if (omitYAxis)
+			return this->m_VectorForwardNoY;
 		return this->m_VectorForward;
 	}
 
-	const XMVECTOR & Transform::GetVectorRight () const
+	const XMVECTOR & Transform::GetVectorRight (bool omitYAxis) const
 	{
+		if (omitYAxis)
+			return this->m_VectorRightNoY;
 		return this->m_VectorRight;
 	}
 
-	const XMVECTOR & Transform::GetVectorLeft () const
+	const XMVECTOR & Transform::GetVectorLeft (bool omitYAxis) const
 	{
+		if (omitYAxis)
+			return this->m_VectorLeftNoY;
 		return this->m_VectorLeft;
 	}
 
-	const XMVECTOR & Transform::GetVectorBackward () const
+	const XMVECTOR & Transform::GetVectorBackward (bool omitYAxis) const
 	{
+		if (omitYAxis)
+			return this->m_VectorBackwardNoY;
 		return this->m_VectorBackward;
 	}
 
@@ -176,6 +201,7 @@ namespace DXEngine
 		XMStoreFloat3 (&this->position, pos);
 		this->positionVec = pos;
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -186,6 +212,7 @@ namespace DXEngine
 		this->position = pos;
 		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -196,6 +223,7 @@ namespace DXEngine
 		this->position = XMFLOAT3 (x, y, z);
 		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -206,6 +234,7 @@ namespace DXEngine
 		this->positionVec += pos;
 		XMStoreFloat3 (&this->position, this->positionVec);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -218,6 +247,7 @@ namespace DXEngine
 		this->position.z += pos.z;
 		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -231,6 +261,7 @@ namespace DXEngine
 
 		this->positionVec = XMLoadFloat3 (&this->position);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -250,6 +281,7 @@ namespace DXEngine
 		XMStoreFloat3 (&this->rotation, rot);
 		this->rotationVec = rot;
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -260,6 +292,7 @@ namespace DXEngine
 		this->rotation = rot;
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -270,6 +303,7 @@ namespace DXEngine
 		this->rotation = XMFLOAT3 (x, y, z);
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -280,6 +314,7 @@ namespace DXEngine
 		this->rotationVec += rot;
 		XMStoreFloat3 (&this->rotation, this->rotationVec);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -292,6 +327,7 @@ namespace DXEngine
 		this->rotation.z += rot.z;
 		this->rotationVec = XMLoadFloat3 (&this->position);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -305,6 +341,7 @@ namespace DXEngine
 
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
 		this->UpdateWorldMatrix ();
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();

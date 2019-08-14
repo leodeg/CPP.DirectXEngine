@@ -3,6 +3,7 @@
 #include "Shaders.h"
 #include "Camera.h"
 #include "Model.h"
+#include "Light.h"
 
 #include <SpriteFont.h>
 #include <SpriteBatch.h>
@@ -71,8 +72,7 @@ namespace DXEngine
 
 		// Models
 		Model m_Model;
-		Model m_Model2;
-		Model m_Model3;
+		Light m_Light;
 
 	private:
 		// Properties
@@ -95,6 +95,7 @@ namespace DXEngine
 		// Shaders
 		VertexShader m_VertexShader;
 		PixelShader m_PixelShader;
+		PixelShader m_PixelShaderNoLight;
 
 		// Buffers
 		ConstantBuffer<CB_VS_vertexshader> m_ConstantVSBuffer; 	// Constant vertex shader buffer

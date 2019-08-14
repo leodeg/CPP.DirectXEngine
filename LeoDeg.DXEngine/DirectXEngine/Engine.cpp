@@ -44,6 +44,7 @@ namespace DXEngine
 		UpdateKeyboardEvents ();
 		UpdateCameraMovement ();
 		Rotate3DModel ();
+		MoveLight ();
 	}
 
 	void Engine::UpdateDeltaTime ()
@@ -128,6 +129,19 @@ namespace DXEngine
 		if (m_Keyboard.KeyIsPressed ('S'))
 		{
 			this->m_Graphics.m_Camera.Transform.AdjustPos (this->m_Graphics.m_Camera.Transform.GetVectorBackward () * moveSpeed);
+		}
+
+	}
+
+	void Engine::MoveLight ()
+	{
+		if (m_Keyboard.KeyIsPressed ('C'))
+		{
+			XMVECTOR lightPosition = this->m_Graphics.m_Camera.Transform.GetPosVec ();
+			lightPosition += this->m_Graphics.m_Camera.Transform.GetVectorForward ();
+			
+			this->m_Graphics.m_Light.GetTransform ().SetPos (lightPosition);
+			this->m_Graphics.m_Light.GetTransform ().SetRot (this->m_Graphics.m_Camera.Transform.GetRot ());
 		}
 	}
 
