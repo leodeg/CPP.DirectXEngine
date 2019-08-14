@@ -5,16 +5,33 @@ namespace DXEngine
 {
 	struct Vertex
 	{
-		Vertex () 
-			: m_Position (0, 0, 0), m_TexCoord (0, 0) { }
+		Vertex ()
+			: position (0, 0, 0), 
+			texCoord (0, 0), 
+			normal (0.0f, 0.0f, 0.0f) 
+		{ }
 
 		Vertex (float x, float y, float z) 
-			: m_Position (x, y, z), m_TexCoord (0, 0) { }
+			: position (x, y, z), 
+			texCoord (0, 0), 
+			normal (0.0f, 0.0f, 0.0f) 
+		{ }
 
 		Vertex (float x, float y, float z, float u, float v) 
-			: m_Position (x, y, z), m_TexCoord (u, v) { }
+			: position (x, y, z), 
+			texCoord (u, v), 
+			normal (0.0f, 0.0f, 0.0f) 
+		{ }
 		
-		DirectX::XMFLOAT3 m_Position;
-		DirectX::XMFLOAT2 m_TexCoord;
+		Vertex (float x, float y, float z, float u, float v, float nx, float ny, float nz)
+			: position (x, y, z), 
+			texCoord (u, v), 
+			normal (nx, ny, nz) 
+		{ }
+
+
+		DirectX::XMFLOAT3 position;
+		DirectX::XMFLOAT2 texCoord;
+		DirectX::XMFLOAT3 normal;
 	};
 }

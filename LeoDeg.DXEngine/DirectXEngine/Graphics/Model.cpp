@@ -26,9 +26,10 @@ namespace DXEngine
 
 	void Model::Draw (const DirectX::XMMATRIX & viewProjectionMatrix)
 	{
-		this->m_ConstantBufferVS->GetData ().matrix = this->Transform.GetWorldMatrix () * viewProjectionMatrix;
-		this->m_ConstantBufferVS->GetData ().matrix = DirectX::XMMatrixTranspose (this->m_ConstantBufferVS->GetData ().matrix); // to column major format
+		this->m_ConstantBufferVS->GetData ().worldViewProjectionMatrix = this->Transform.GetWorldMatrix () * viewProjectionMatrix;
+		this->m_ConstantBufferVS->GetData ().worldMatrix = this->Transform.GetWorldMatrix ();
 		m_ConstantBufferVS->ApplyChanges ();
+
 		this->m_DeviceContext->VSSetConstantBuffers (0, 1, this->m_ConstantBufferVS->GetAddressOf ());
 
 		for (int i = 0; i < m_Meshes.size (); i++)
@@ -80,14 +81,18 @@ namespace DXEngine
 		{
 			Vertex vertex;
 
-			vertex.m_Position.x = pMesh->mVertices[i].x;
-			vertex.m_Position.y = pMesh->mVertices[i].y;
-			vertex.m_Position.z = pMesh->mVertices[i].z;
+			vertex.position.x = pMesh->mVertices[i].x;
+			vertex.position.y = pMesh->mVertices[i].y;
+			vertex.position.z = pMesh->mVertices[i].z;
+
+			vertex.normal.x = pMesh->mNormals[i].x;
+			vertex.normal.y = pMesh->mNormals[i].y;
+			vertex.normal.z = pMesh->mNormals[i].z;
 
 			if (pMesh->mTextureCoords[0])
 			{
-				vertex.m_TexCoord.x = static_cast<float>(pMesh->mTextureCoords[0][i].x);
-				vertex.m_TexCoord.y = static_cast<float>(pMesh->mTextureCoords[0][i].y);
+				vertex.texCoord.x = static_cast<float>(pMesh->mTextureCoords[0][i].x);
+				vertex.texCoord.y = static_cast<float>(pMesh->mTextureCoords[0][i].y);
 			}
 
 			vertices.push_back (vertex);

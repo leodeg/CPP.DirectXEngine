@@ -7,7 +7,8 @@ namespace DXEngine
 
 	struct CB_VS_vertexshader
 	{
-		DirectX::XMMATRIX matrix; // 16 bytes
+		DirectX::XMMATRIX worldViewProjectionMatrix; // 16 bytes
+		DirectX::XMMATRIX worldMatrix; // 16 bytes
 	};
 
 	struct CB_PS_light

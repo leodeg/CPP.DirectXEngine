@@ -1,28 +1,33 @@
-cbuffer mycBuffer : register(b0)
+#pragma pack_matrix ( row_major )
+
+cbuffer perObjectBuffer : register(b0)
 {
-    float4x4 stateMatrix;
+    float4x4 worldViewProjectionMatrix;
+    float4x4 worldMatrix;
 };
 
 struct VS_INPUT
 {
     float3 inPos : POSITION;
     float2 inTexCoord : TEXCOORD;
+    float3 inNormal : NORMAL;
 };
 
 struct VS_OUTPUT
 {
     float4 outPosition : SV_POSITION;
     float2 outTexCoord : TEXCOORD;
+    float3 outNormal : NORMAL;
 };
 
 
 VS_OUTPUT main (VS_INPUT input)
 {
     VS_OUTPUT output;
-
 	
-    output.outPosition = mul(float4(input.inPos, 1.0f), stateMatrix);
+    output.outPosition = mul(float4(input.inPos, 1.0f), worldViewProjectionMatrix);
     output.outTexCoord = input.inTexCoord;
+    output.outNormal = normalize(mul(float4(input.inNormal, 0.0f), worldMatrix));
 
     return output;
 }
