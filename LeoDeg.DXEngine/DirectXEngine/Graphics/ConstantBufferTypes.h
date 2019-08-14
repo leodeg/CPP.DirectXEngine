@@ -3,13 +3,16 @@
 
 namespace DXEngine
 {
+	// Constants buffers must be 16 bytes aligned
+
 	struct CB_VS_vertexshader
 	{
-		DirectX::XMMATRIX matrix;
+		DirectX::XMMATRIX matrix; // 16 bytes
 	};
 
-	struct CB_PS_pixelshader
+	struct CB_PS_light
 	{
-		float alpha = 1.0f;
+		DirectX::XMFLOAT3 ambientLightColor; // 12 bytes
+		float ambientLightStrength; // 4 byte
 	};
 }

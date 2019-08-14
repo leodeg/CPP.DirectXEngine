@@ -98,7 +98,7 @@ namespace DXEngine
 
 		// Buffers
 		ConstantBuffer<CB_VS_vertexshader> m_ConstantVSBuffer; 	// Constant vertex shader buffer
-		ConstantBuffer<CB_PS_pixelshader> m_ConstantPSBuffer;	// Constant pixel shader buffer
+		ConstantBuffer<CB_PS_light> m_ConstantPSLightBuffer;	// Constant pixel shader buffer
 
 		// Stencil
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;

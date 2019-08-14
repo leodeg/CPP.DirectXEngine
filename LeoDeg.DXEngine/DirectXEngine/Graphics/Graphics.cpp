@@ -70,6 +70,7 @@ namespace DXEngine
 	{
 		UINT offset = 0;
 
+
 		UpdateDeviceContext ();
 		DrawTextureObject ();
 		UpdateFPSCounter ();
@@ -82,6 +83,9 @@ namespace DXEngine
 
 	void Graphics::UpdateDeviceContext ()
 	{
+		this->m_ConstantPSLightBuffer.ApplyChanges ();
+		this->m_DeviceContext->PSSetConstantBuffers (0, 1, this->m_ConstantPSLightBuffer.GetAddressOf ());
+
 		// Colors
 		float bgColor[] = { 0.0f, 0.0f, 0.4f, 1.0f };
 
@@ -133,7 +137,7 @@ namespace DXEngine
 		ImGui::NewFrame ();
 
 		// Create ImGui Test Window
-		ImGui::Begin ("Scene Properties");
+		ImGui::Begin ("Scene Info");
 
 		ImGui::Text ("Camera:");
 		ImGui::Text ("position: ");
@@ -147,6 +151,14 @@ namespace DXEngine
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetPosString ().c_str ());
 		ImGui::Text ("rotation: ");
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetRotString ().c_str ());
+
+		ImGui::End ();
+
+		ImGui::Begin ("Scene Lighting Properties");
+
+		ImGui::Text ("Light Controls:");
+		ImGui::DragFloat3 ("Ambient Light Color", &this->m_ConstantPSLightBuffer.GetData ().ambientLightColor.x, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat ("Ambient Light Strength", &this->m_ConstantPSLightBuffer.GetData ().ambientLightStrength, 0.01f, 0.0f, 10.0f);
 
 		ImGui::End ();
 
@@ -425,8 +437,11 @@ namespace DXEngine
 		hResult = m_ConstantVSBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex shader constant buffer.");
 
-		hResult = m_ConstantPSBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
+		hResult = m_ConstantPSLightBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize pixel shader constant buffer.");
+
+		this->m_ConstantPSLightBuffer.GetData ().ambientLightColor = XMFLOAT3 (1.0f, 1.0f, 1.0f);
+		this->m_ConstantPSLightBuffer.GetData ().ambientLightStrength = 1.0f;
 	}
 
 	void Graphics::InitializeMainCamera ()
