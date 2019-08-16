@@ -36,6 +36,8 @@ namespace DXEngine
 		// Create methods
 		void DrawTextureObject ();
 
+		void DrawLightObjects ();
+
 		// Getters
 		int GetFpsCount ();
 		std::string GetFpsString ();

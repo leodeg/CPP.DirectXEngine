@@ -138,10 +138,11 @@ namespace DXEngine
 		if (m_Keyboard.KeyIsPressed ('C'))
 		{
 			XMVECTOR lightPosition = this->m_Graphics.m_Camera.Transform.GetPosVec ();
-			lightPosition += this->m_Graphics.m_Camera.Transform.GetVectorForward ();
+			lightPosition += this->m_Graphics.m_Camera.Transform.GetVectorForward () * 4.0f;
 			
 			this->m_Graphics.m_Light.GetTransform ().SetPos (lightPosition);
-			this->m_Graphics.m_Light.GetTransform ().SetRot (this->m_Graphics.m_Camera.Transform.GetRot ());
+			this->m_Graphics.m_Light.GetTransform ().SetLookAt (this->m_Graphics.m_Model.Transform.position.x, this->m_Graphics.m_Model.Transform.position.y + 7.0f , this->m_Graphics.m_Model.Transform.position.z);
+			
 		}
 	}
 

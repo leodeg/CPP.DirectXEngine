@@ -68,11 +68,9 @@ namespace DXEngine
 
 	void Graphics::RenderFrame ()
 	{
-		UINT offset = 0;
-
-
 		UpdateDeviceContext ();
 		DrawTextureObject ();
+		DrawLightObjects ();
 		UpdateFPSCounter ();
 		RenderFonts ();
 		UpdateRenderingImGUI ();
@@ -112,6 +110,22 @@ namespace DXEngine
 		this->m_DeviceContext->PSSetSamplers (0, 1, this->m_SamplerState.GetAddressOf ());
 		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
 		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
+	}
+
+	void Graphics::DrawTextureObject ()
+	{
+		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
+
+		m_Model.Draw (viewMatrix);
+
+	}
+
+	void Graphics::DrawLightObjects ()
+	{
+		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
+		this->m_DeviceContext->PSSetShader (m_PixelShaderNoLight.GetShader (), NULL, 0);
+
+		m_Light.DrawLightModel (viewMatrix);
 	}
 
 	void Graphics::UpdateFPSCounter ()
@@ -169,8 +183,13 @@ namespace DXEngine
 		ImGui::Begin ("Scene Lighting Properties");
 
 		ImGui::Text ("Light Controls:");
-		ImGui::DragFloat3 ("Ambient Light Color", &this->m_ConstantPSLightBuffer.GetData ().ambientLightColor.x, 0.01f, 0.0f, 1.0f);
-		ImGui::DragFloat ("Ambient Light Strength", &this->m_ConstantPSLightBuffer.GetData ().ambientLightStrength, 0.01f, 0.0f, 10.0f);
+		ImGui::Text ("Ambient Light:");
+		ImGui::DragFloat3 ("Color", &this->m_ConstantPSLightBuffer.GetData ().ambientLightColor.x, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat ("Strength", &this->m_ConstantPSLightBuffer.GetData ().ambientLightStrength, 0.01f, 0.0f, 10.0f);
+
+		ImGui::Text ("Dynamic Light:");
+		ImGui::DragFloat3 ("Color", &this->m_Light.lightColor.x, 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat ("Strength", &this->m_Light.lightStrength, 0.01f, 0.0f, 10.0f);
 
 		ImGui::End ();
 
@@ -179,17 +198,6 @@ namespace DXEngine
 
 		// Render Draw Data
 		ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
-	}
-
-	void Graphics::DrawTextureObject ()
-	{
-		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
-
-		m_Model.Draw (viewMatrix);
-
-		//this->m_DeviceContext->PSSetShader (m_PixelShaderNoLight.GetShader (), NULL, 0);
-		m_Light.DrawLightModel (viewMatrix);
-		//m_GameObject.Draw (viewMatrix);
 	}
 
 	// ------------------------------
@@ -391,7 +399,7 @@ namespace DXEngine
 			return;
 		}
 
-		if (!m_PixelShader.Initialize (this->m_Device, shaderfolder + L"pixelshader_nolight.cso"))
+		if (!m_PixelShaderNoLight.Initialize (this->m_Device, shaderfolder + L"pixelshader_nolight.cso"))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader No Light initialization.");
 			return;

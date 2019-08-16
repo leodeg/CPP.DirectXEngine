@@ -1,4 +1,4 @@
-cbuffer lightBuffer : register (b0)
+cbuffer lightBuffer : register(b0)
 {
     float3 ambientLightColor;
     float ambientLightStrength;
@@ -11,8 +11,8 @@ cbuffer lightBuffer : register (b0)
 
 struct PS_INPUT
 {
-	float4 inPosition : SV_POSITION;
-	float2 inTexCoord : TEXCOORD;
+    float4 inPosition : SV_POSITION;
+    float2 inTexCoord : TEXCOORD;
     float3 inNormal : NORMAL;
     float3 inWorldPos : WORLD_POSITION;
 };
@@ -22,10 +22,11 @@ SamplerState objSamplerState : SAMPLER : register(s0);
 
 float4 main (PS_INPUT input) : SV_TARGET
 {
-     float3 sampleColor = objTexture.Sample(objSamplerState, input.inTexCoord);
-    //sampleColor *= input.inNormal;
+    float3 sampleColor = objTexture.Sample(objSamplerState, input.inTexCoord);
+    //sampleColor *= ambientLightColor * ambientLightStrength;
+    // sampleColor *= input.inNormal;
 
-    float3 ambientLight = ambientLightColor *ambientLightStrength;
+    float3 ambientLight = ambientLightColor * ambientLightStrength;
     float3 appliedLight = ambientLight;
 
     float3 vectorToLight = normalize(dynamicLightPos - input.inWorldPos);
@@ -33,7 +34,7 @@ float4 main (PS_INPUT input) : SV_TARGET
     float3 diffuseLight = diffuseLightIntensity * dynamicLightStrength * dynamicLightColor;
 
     appliedLight += diffuseLight;
-    float3 finalColor = sampleColor * saturate(appliedLight);
+    float3 finalColor = sampleColor * appliedLight; //* saturate(appliedLight);
 
-	return float4(finalColor, 1.0f);
+    return float4(finalColor, 1.0f);
 }
