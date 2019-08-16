@@ -21,20 +21,24 @@ namespace DXEngine
 
 		this->Transform.ResetPos ();
 		this->Transform.ResetRot ();
+		this->Transform.UpdateWorldMatrix ();
 		return true;
 	}
 
 	void Model::Draw (const DirectX::XMMATRIX & viewProjectionMatrix)
 	{
+		this->m_DeviceContext->VSSetConstantBuffers (0, 1, this->m_ConstantBufferVS->GetAddressOf ());
+
 		this->m_ConstantBufferVS->GetData ().worldViewProjectionMatrix = this->Transform.GetWorldMatrix () * viewProjectionMatrix;
 		this->m_ConstantBufferVS->GetData ().worldMatrix = this->Transform.GetWorldMatrix ();
 		m_ConstantBufferVS->ApplyChanges ();
 
-		this->m_DeviceContext->VSSetConstantBuffers (0, 1, this->m_ConstantBufferVS->GetAddressOf ());
-
 		for (int i = 0; i < m_Meshes.size (); i++)
+		{
 			m_Meshes[i].Draw ();
+		}
 	}
+
 
 #pragma region ASSIMP
 

@@ -206,11 +206,13 @@ namespace DXEngine
 
 		ImGui::Begin ("Light Properties");
 
+		ImGui::DragFloat3 ("Color", &this->m_Light.lightColor.x, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat ("Strength", &this->m_Light.lightStrength, 0.01f, 0.0f, 10.0f);
 		ImGui::NewLine ();
 		ImGui::DragFloat ("Dynamic Light Attenuation A", &this->m_Light.attenuationA, 0.01f, 0.1f, 10.0f);
 		ImGui::DragFloat ("Dynamic Light Attenuation B", &this->m_Light.attenuationB, 0.01f, 0.1f, 10.0f);
 		ImGui::DragFloat ("Dynamic Light Attenuation C", &this->m_Light.attenuationC, 0.01f, 0.1f, 10.0f);
+		ImGui::NewLine ();
 
 		ImGui::End ();
 
@@ -503,6 +505,7 @@ namespace DXEngine
 
 	void Graphics::InitializeModels ()
 	{
+		//if (!m_Model.Initialize ("Data\\3DModels\\Samples\\dodge_challenger.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		if (!m_Model.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");

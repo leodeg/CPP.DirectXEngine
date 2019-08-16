@@ -60,10 +60,10 @@ namespace DXEngine
 		void AdjustRot (const XMFLOAT3 & rot);
 		void AdjustRot (float x, float y, float z);
 
-	private:
-		void UpdateViewMatrix ();
 		void UpdateWorldMatrix ();
 
+	private:
+		void UpdateViewMatrix ();
 		void UpdateDirectionVectors ();
 
 	public:
@@ -84,7 +84,7 @@ namespace DXEngine
 
 	private:
 		XMMATRIX m_ViewMatrix;
-		XMMATRIX m_WorldMatrix;
+		XMMATRIX m_WorldMatrix = DirectX::XMMatrixIdentity ();
 		XMMATRIX m_ProjectionMatrix;
 
 		XMVECTOR m_VectorUp;
@@ -100,6 +100,5 @@ namespace DXEngine
 		XMVECTOR m_VectorRightNoY;
 		XMVECTOR m_VectorForwardNoY;
 		XMVECTOR m_VectorBackwardNoY;
-
 	};
 }

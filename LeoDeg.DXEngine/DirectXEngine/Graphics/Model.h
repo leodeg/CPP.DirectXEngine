@@ -33,5 +33,7 @@ namespace DXEngine
 		ID3D11Device * m_Device = nullptr;
 		ID3D11DeviceContext * m_DeviceContext = nullptr;
 		ConstantBuffer<CB_VS_vertexshader> * m_ConstantBufferVS = nullptr;
+		XMMATRIX m_WorldMatrix = XMMatrixIdentity ();
+
 	};
 }
