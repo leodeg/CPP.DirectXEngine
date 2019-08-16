@@ -20,5 +20,9 @@ namespace DXEngine
 		float dynamicLightStrength; // 4 byte
 
 		DirectX::XMFLOAT3 dynamicLightPos; // 12 bytes
+
+		float dynamicLightAttenuationA;
+		float dynamicLightAttenuationB;
+		float dynamicLightAttenuationC;
 	};
 }

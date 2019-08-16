@@ -15,7 +15,7 @@ int APIENTRY wWinMain (_In_ HINSTANCE hInstance,
 	}
 
 	DXEngine::Engine engine;
-	if (engine.Initialize (hInstance, "LeoDeg.DXEngine", "LeoDeg.DXEngine.Window.Class", 1280, 720))
+	if (engine.Initialize (hInstance, "LeoDeg.DXEngine", "LeoDeg.DXEngine.Window.Class", 1600, 900))
 	{
 		while (engine.ProcessMessages () == true)
 		{

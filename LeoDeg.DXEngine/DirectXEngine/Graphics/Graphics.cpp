@@ -84,6 +84,9 @@ namespace DXEngine
 		this->m_ConstantPSLightBuffer.GetData ().dynamicLightColor = m_Light.lightColor;
 		this->m_ConstantPSLightBuffer.GetData ().dynamicLightStrength = m_Light.lightStrength;
 		this->m_ConstantPSLightBuffer.GetData ().dynamicLightPos = m_Light.GetTransform ().GetPos ();
+		this->m_ConstantPSLightBuffer.GetData ().dynamicLightAttenuationA = m_Light.attenuationA;
+		this->m_ConstantPSLightBuffer.GetData ().dynamicLightAttenuationB = m_Light.attenuationB;
+		this->m_ConstantPSLightBuffer.GetData ().dynamicLightAttenuationC = m_Light.attenuationC;
 
 		this->m_ConstantPSLightBuffer.ApplyChanges ();
 		this->m_DeviceContext->PSSetConstantBuffers (0, 1, this->m_ConstantPSLightBuffer.GetAddressOf ());
@@ -154,6 +157,10 @@ namespace DXEngine
 		ImGui_ImplWin32_NewFrame ();
 		ImGui::NewFrame ();
 
+		// ----------------------------------------
+		// Scene Info
+		// ----------------------------------------
+
 		// Create ImGui Test Window
 		ImGui::Begin ("Scene Info");
 
@@ -163,14 +170,14 @@ namespace DXEngine
 		ImGui::Text ("rotation: ");
 		ImGui::SameLine (); ImGui::Text (m_Camera.Transform.GetRotString ().c_str ());
 
-		ImGui::Separator ();
+		ImGui::NewLine ();
 		ImGui::Text ("Model:");
 		ImGui::Text ("position: ");
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetPosString ().c_str ());
 		ImGui::Text ("rotation: ");
 		ImGui::SameLine (); ImGui::Text (m_Model.Transform.GetRotString ().c_str ());
 
-		ImGui::Separator ();
+		ImGui::NewLine ();
 		ImGui::Text ("Light:");
 		ImGui::Text ("position: ");
 		ImGui::SameLine (); ImGui::Text (m_Light.GetTransform ().GetPosString ().c_str ());
@@ -180,6 +187,10 @@ namespace DXEngine
 
 		ImGui::End ();
 
+		// ----------------------------------------
+		// Scene Lighting Properties
+		// ----------------------------------------
+
 		ImGui::Begin ("Scene Lighting Properties");
 
 		ImGui::Text ("Light Controls:");
@@ -187,9 +198,19 @@ namespace DXEngine
 		ImGui::DragFloat3 ("Color", &this->m_ConstantPSLightBuffer.GetData ().ambientLightColor.x, 0.01f, 0.0f, 1.0f);
 		ImGui::DragFloat ("Strength", &this->m_ConstantPSLightBuffer.GetData ().ambientLightStrength, 0.01f, 0.0f, 10.0f);
 
-		ImGui::Text ("Dynamic Light:");
-		ImGui::DragFloat3 ("Color", &this->m_Light.lightColor.x, 0.01f, 0.0f, 1.0f);
+		ImGui::End ();
+
+		// ----------------------------------------
+		// Light Properties
+		// ----------------------------------------
+
+		ImGui::Begin ("Light Properties");
+
 		ImGui::DragFloat ("Strength", &this->m_Light.lightStrength, 0.01f, 0.0f, 10.0f);
+		ImGui::NewLine ();
+		ImGui::DragFloat ("Dynamic Light Attenuation A", &this->m_Light.attenuationA, 0.01f, 0.1f, 10.0f);
+		ImGui::DragFloat ("Dynamic Light Attenuation B", &this->m_Light.attenuationB, 0.01f, 0.1f, 10.0f);
+		ImGui::DragFloat ("Dynamic Light Attenuation C", &this->m_Light.attenuationC, 0.01f, 0.1f, 10.0f);
 
 		ImGui::End ();
 

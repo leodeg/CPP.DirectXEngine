@@ -15,6 +15,9 @@ namespace DXEngine
 	public:
 		DirectX::XMFLOAT3 lightColor = DirectX::XMFLOAT3 (1.0f, 1.0f, 1.0f);
 		float lightStrength = 1.0f;
+		float attenuationA = 1.0f;
+		float attenuationB = 0.1f;
+		float attenuationC = 0.1f;
 
 	private:
 		Model m_Model;
