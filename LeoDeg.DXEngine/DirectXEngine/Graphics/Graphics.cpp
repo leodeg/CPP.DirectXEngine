@@ -517,6 +517,7 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Light failed to initialize");
 			return;
 		}
+
 	}
 
 }

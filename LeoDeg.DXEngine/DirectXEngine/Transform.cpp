@@ -6,12 +6,13 @@ namespace DXEngine
 	{
 		this->position = XMFLOAT3 (0.0f, 0.0f, 0.0f);
 		this->rotation = XMFLOAT3 (0.0f, 0.0f, 0.0f);
+		this->scale = XMFLOAT3 (1.0f, 1.0f, 1.0f);
 
 		this->positionVec = XMLoadFloat3 (&this->position);
 		this->rotationVec = XMLoadFloat3 (&this->rotation);
 
 		this->UpdateWorldMatrix ();
-		this->UpdateDirectionVectors (); 
+		this->UpdateDirectionVectors ();
 
 		if (updateViewMatrix)
 			this->UpdateViewMatrix ();
@@ -33,7 +34,22 @@ namespace DXEngine
 
 	void Transform::UpdateWorldMatrix ()
 	{
-		this->m_WorldMatrix = XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z) * XMMatrixTranslation (this->position.x, this->position.y, this->position.z);
+		if (is2D)
+			this->UpdateWorldMatrix2D ();
+		else
+			this->UpdateWorldMatrix3D ();
+	}
+
+	void Transform::UpdateWorldMatrix3D ()
+	{
+		this->m_WorldMatrix = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixRotationRollPitchYaw (this->rotation.x, this->rotation.y, this->rotation.z) * XMMatrixTranslation (this->position.x, this->position.y, this->position.z);
+	}
+
+	void Transform::UpdateWorldMatrix2D ()
+	{
+		XMMATRIX translationOffsetMatrix = XMMatrixTranslation (-position.x, -position.y, 0.0f); //z component irrelevant for 2d camera
+		XMMATRIX camRotationMatrix = XMMatrixRotationRollPitchYaw (rotation.x, rotation.y, rotation.z);
+		m_WorldMatrix = camRotationMatrix * translationOffsetMatrix;
 	}
 
 	void Transform::UpdateDirectionVectors ()
@@ -56,10 +72,18 @@ namespace DXEngine
 
 	}
 
+	// If transform is 2D then update orthogonal matrix values, otherwise update projection matrix
 	void Transform::SetProjectionValues (float fovDegrees, float aspectRation, float nearZ, float farZ)
 	{
-		float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
-		this->m_ProjectionMatrix = XMMatrixPerspectiveFovLH (fovRadians, aspectRation, nearZ, farZ);
+		if (is2D)
+		{
+			m_OrthoMatrix = XMMatrixOrthographicOffCenterLH (0.0f, fovDegrees, aspectRation, 0.0f, nearZ, farZ);
+		} 
+		else
+		{
+			float fovRadians = (fovDegrees / 360.0f) * XM_2PI;
+			this->m_ProjectionMatrix = XMMatrixPerspectiveFovLH (fovRadians, aspectRation, nearZ, farZ);
+		}
 	}
 
 	void Transform::SetLookAt (float x, float y, float z)
@@ -103,6 +127,11 @@ namespace DXEngine
 	const XMMATRIX & Transform::GetViewMatrix () const
 	{
 		return this->m_ViewMatrix;
+	}
+
+	const XMMATRIX & Transform::GetOrthoMatrix () const
+	{
+		return this->m_OrthoMatrix;
 	}
 
 	const XMMATRIX & Transform::GetWorldMatrix () const
@@ -347,4 +376,34 @@ namespace DXEngine
 	}
 
 #pragma endregion
+
+#pragma region Scale
+
+	void Transform::ResetScale ()
+	{
+		scale.x = 1.0f;
+		scale.y = 1.0f;
+		scale.z = 1.0f;
+	}
+
+	XMFLOAT3 & Transform::GetScale ()
+	{
+		return this->scale;
+	}
+
+	void Transform::SetScale (float x, float y, float z)
+	{
+		scale.x = x;
+		scale.y = y;
+		scale.z = z;
+	}
+
+	void Transform::AdjustScale (float x, float y, float z)
+	{
+		scale.x += x;
+		scale.y += y;
+		scale.z += z;
+	}
+
+#pragma  endregion
 }

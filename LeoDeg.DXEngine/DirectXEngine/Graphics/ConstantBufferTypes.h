@@ -11,6 +11,11 @@ namespace DXEngine
 		DirectX::XMMATRIX worldMatrix; // 16 bytes
 	};
 
+	struct CB_VS_vertexshader_2d
+	{
+		DirectX::XMMATRIX worldViewProjectionMatrix; // 16 bytes
+	};
+
 	struct CB_PS_light
 	{
 		DirectX::XMFLOAT3 ambientLightColor; // 12 bytes

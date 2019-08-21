@@ -33,6 +33,7 @@ namespace DXEngine
 
 		// Matrix
 		const XMMATRIX & GetViewMatrix () const;
+		const XMMATRIX & GetOrthoMatrix () const;
 		const XMMATRIX & GetWorldMatrix () const;
 		const XMMATRIX & GetProjectionMatrix () const;
 
@@ -60,11 +61,20 @@ namespace DXEngine
 		void AdjustRot (const XMFLOAT3 & rot);
 		void AdjustRot (float x, float y, float z);
 
+		// Scale
+		void ResetScale ();
+		XMFLOAT3 & GetScale ();
+		void SetScale (float x, float y, float z);
+		void AdjustScale (float x, float y, float z);
+
 		void UpdateWorldMatrix ();
 
 	private:
 		void UpdateViewMatrix ();
 		void UpdateDirectionVectors ();
+
+		void UpdateWorldMatrix2D ();
+		void UpdateWorldMatrix3D ();
 
 	public:
 		const XMVECTOR VECTOR_UP = XMVectorSet (0.0f, 1.0f, 0.0f, 0.0f);
@@ -80,12 +90,16 @@ namespace DXEngine
 		XMFLOAT3 position;
 		XMFLOAT3 rotation;
 
+		XMFLOAT3 scale;
+
 		bool updateViewMatrix = false;
+		bool is2D = false;
 
 	private:
 		XMMATRIX m_ViewMatrix;
 		XMMATRIX m_WorldMatrix = DirectX::XMMatrixIdentity ();
 		XMMATRIX m_ProjectionMatrix;
+		XMMATRIX m_OrthoMatrix;
 
 		XMVECTOR m_VectorUp;
 		XMVECTOR m_VectorDown;

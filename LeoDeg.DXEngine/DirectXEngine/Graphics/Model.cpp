@@ -77,13 +77,13 @@ namespace DXEngine
 
 	Mesh Model::ProcessMesh (aiMesh * pMesh, const aiScene * pScene, const XMMATRIX & transformMatrix)
 	{
-		std::vector<Vertex> vertices;
+		std::vector<Vertex3D> vertices;
 		std::vector<DWORD> indices;
 
 		// Display vertices
 		for (UINT i = 0; i < pMesh->mNumVertices; i++)
 		{
-			Vertex vertex;
+			Vertex3D vertex;
 
 			vertex.position.x = pMesh->mVertices[i].x;
 			vertex.position.y = pMesh->mVertices[i].y;

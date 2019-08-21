@@ -8,6 +8,7 @@ namespace DXEngine
 		{
 			return false;
 		}
+		this->GetTransform ().scale = XMFLOAT3 (0.2f, 0.2f, 0.2f);
 
 		return true;
 	}
