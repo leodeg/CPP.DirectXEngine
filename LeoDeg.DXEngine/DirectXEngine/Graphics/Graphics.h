@@ -2,8 +2,10 @@
 #include "AdapterReader.h"
 #include "Shaders.h"
 #include "Camera.h"
+#include "Camera2D.h"
 #include "Model.h"
 #include "Light.h"
+#include "Sprite.h"
 
 #include <SpriteFont.h>
 #include <SpriteBatch.h>
@@ -38,6 +40,8 @@ namespace DXEngine
 
 		void DrawLightObjects ();
 
+		void DrawSprites ();
+
 		// Getters
 		int GetFpsCount ();
 		std::string GetFpsString ();
@@ -70,11 +74,14 @@ namespace DXEngine
 
 	public:
 		Camera m_Camera;
+		Camera2D m_Camera2D;
 		RenderableGameObject m_GameObject;
 
 		// Models
 		Model m_Model;
 		Light m_Light;
+
+		Sprite m_Sprite;
 
 	private:
 		// Properties
@@ -96,12 +103,15 @@ namespace DXEngine
 
 		// Shaders
 		VertexShader m_VertexShader;
+		VertexShader m_VertexShader2D;
 		PixelShader m_PixelShader;
+		PixelShader m_PixelShader2D;
 		PixelShader m_PixelShaderNoLight;
 
 		// Buffers
-		ConstantBuffer<CB_VS_vertexshader> m_ConstantVSBuffer; 	// Constant vertex shader buffer
 		ConstantBuffer<CB_PS_light> m_ConstantPSLightBuffer;	// Constant pixel shader buffer
+		ConstantBuffer<CB_VS_vertexshader> m_ConstantVSBuffer; 	// Constant vertex shader buffer
+		ConstantBuffer<CB_VS_vertexshader_2d> m_ConstantVSBuffer2D;
 
 		// Stencil
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;

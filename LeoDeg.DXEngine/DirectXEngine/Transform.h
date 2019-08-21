@@ -64,8 +64,8 @@ namespace DXEngine
 		// Scale
 		void ResetScale ();
 		XMFLOAT3 & GetScale ();
-		void SetScale (float x, float y, float z);
-		void AdjustScale (float x, float y, float z);
+		void SetScale (float x, float y, float z = 1.0f);
+		void AdjustScale (float x, float y, float z = 0.0f);
 
 		void UpdateWorldMatrix ();
 
@@ -84,18 +84,20 @@ namespace DXEngine
 		const XMVECTOR VECTOR_FORWARD = XMVectorSet (0.0f, 0.0f, 1.0f, 0.0f);
 		const XMVECTOR VECTOR_BACKWARD = XMVectorSet (0.0f, 0.0f, -1.0f, 0.0f);
 
-		XMVECTOR positionVec;
-		XMVECTOR rotationVec;
-
-		XMFLOAT3 position;
-		XMFLOAT3 rotation;
-
-		XMFLOAT3 scale;
 
 		bool updateViewMatrix = false;
-		bool is2D = false;
+		bool isObject2D = false;
+		bool isSprite = false;
 
 	private:
+		XMVECTOR m_PositionVec;
+		XMVECTOR m_RotationVec;
+		XMVECTOR m_ScaleVec;
+
+		XMFLOAT3 m_Position;
+		XMFLOAT3 m_Rotation;
+		XMFLOAT3 m_Scale;
+
 		XMMATRIX m_ViewMatrix;
 		XMMATRIX m_WorldMatrix = DirectX::XMMatrixIdentity ();
 		XMMATRIX m_ProjectionMatrix;

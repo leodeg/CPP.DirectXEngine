@@ -71,6 +71,7 @@ namespace DXEngine
 		UpdateDeviceContext ();
 		DrawTextureObject ();
 		DrawLightObjects ();
+		DrawSprites ();
 		UpdateFPSCounter ();
 		RenderFonts ();
 		UpdateRenderingImGUI ();
@@ -129,6 +130,15 @@ namespace DXEngine
 		this->m_DeviceContext->PSSetShader (m_PixelShaderNoLight.GetShader (), NULL, 0);
 
 		m_Light.DrawLightModel (viewMatrix);
+	}
+
+	void Graphics::DrawSprites ()
+	{
+		m_DeviceContext->IASetInputLayout (m_VertexShader2D.GetInputLayout ());
+		m_DeviceContext->PSSetShader (m_PixelShader2D.GetShader (), NULL, 0);
+		m_DeviceContext->VSSetShader (m_VertexShader2D.GetShader (), NULL, 0);
+
+		m_Sprite.Draw (m_Camera2D.Transform.GetWorldMatrix () * m_Camera2D.Transform.GetOrthoMatrix ());
 	}
 
 	void Graphics::UpdateFPSCounter ()
@@ -401,16 +411,42 @@ namespace DXEngine
 	{
 		std::wstring shaderfolder = DetermineShaderPath ();
 
-		D3D11_INPUT_ELEMENT_DESC layout[] =
+		// ------------------------------
+		// 2D Shaders
+		// ------------------------------
+		D3D11_INPUT_ELEMENT_DESC layout2D[] =
+		{
+			{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
+			{"TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
+		};
+
+		UINT numOfElements2D = ARRAYSIZE (layout2D);
+
+		if (!m_VertexShader2D.Initialize (m_Device, shaderfolder + L"vertexshader_2D.cso", layout2D, numOfElements2D))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Failed Vertex Shader 2D initialization.");
+			return;
+		}
+
+		if (!m_PixelShader2D.Initialize (this->m_Device, shaderfolder + L"pixelshader_2D.cso"))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader 2D initialization.");
+			return;
+		}
+
+		// ------------------------------
+		// 3D Shaders
+		// ------------------------------
+		D3D11_INPUT_ELEMENT_DESC layout3D[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0,  },
 			{ "TEXCOORD", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 },
 			{ "NORMAL", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		};
 
-		UINT numOfElements = ARRAYSIZE (layout);
+		UINT numOfElements3D = ARRAYSIZE (layout3D);
 
-		if (!m_VertexShader.Initialize (this->m_Device, shaderfolder + L"vertexshader.cso", layout, numOfElements))
+		if (!m_VertexShader.Initialize (this->m_Device, shaderfolder + L"vertexshader.cso", layout3D, numOfElements3D))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Failed Vertex Shader initialization.");
 			return;
@@ -490,6 +526,9 @@ namespace DXEngine
 		hResult = m_ConstantVSBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex shader constant buffer.");
 
+		hResult = m_ConstantVSBuffer2D.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
+		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex shader constant buffer 2D.");
+
 		hResult = m_ConstantPSLightBuffer.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize pixel shader constant buffer.");
 
@@ -501,6 +540,8 @@ namespace DXEngine
 	{
 		m_Camera.Transform.SetPos (0.0f, 0.0f, -10.0f);
 		m_Camera.Transform.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
+
+		m_Camera2D.Transform.SetProjectionValues (m_WindowWidth, m_WindowHeight, 0.0f, 1.0f);
 	}
 
 	void Graphics::InitializeModels ()
@@ -517,6 +558,15 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Light failed to initialize");
 			return;
 		}
+
+		if (!m_Sprite.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), 256, 256, "Data\\Textures\\sprite_256x256.png", m_ConstantVSBuffer2D))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Sprite failed to initialize");
+			return;
+		}
+
+		m_Sprite.Transform.SetPos (-m_WindowWidth / 2.0f, -m_WindowHeight / 2.0f, 0.0f);
+		//m_Sprite.Transform.SetPos (0.0f, 0.0f, 0.0f);
 
 	}
 

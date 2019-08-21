@@ -11,7 +11,7 @@ namespace DXEngine
 		HRESULT hResult = this->m_VertexBuffer.Initialize (device, vertices.data (), static_cast<UINT>(vertices.size ()));
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize vertex buffer for mesh.");
 
-		hResult = this->m_IndexBuffer.Initilization (device, indices.data (), static_cast<UINT>(indices.size ()));
+		hResult = this->m_IndexBuffer.Initialize (device, indices.data (), static_cast<UINT>(indices.size ()));
 		COM_ERROR_IF_FAILED (hResult, "Failed to initialize index buffer for mesh.");
 	}
 

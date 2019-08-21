@@ -141,7 +141,7 @@ namespace DXEngine
 			lightPosition += this->m_Graphics.m_Camera.Transform.GetVectorForward () * 4.0f;
 			
 			this->m_Graphics.m_Light.GetTransform ().SetPos (lightPosition);
-			this->m_Graphics.m_Light.GetTransform ().SetLookAt (this->m_Graphics.m_Model.Transform.position.x, this->m_Graphics.m_Model.Transform.position.y + 10.0f , this->m_Graphics.m_Model.Transform.position.z);
+			this->m_Graphics.m_Light.GetTransform ().SetLookAt (this->m_Graphics.m_Model.Transform.GetPos ().x, this->m_Graphics.m_Model.Transform.GetPos ().y + 10.0f , this->m_Graphics.m_Model.Transform.GetPos ().z);
 			
 		}
 	}

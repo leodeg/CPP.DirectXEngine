@@ -47,7 +47,7 @@ public:
 		return this->m_IndexCount;
 	}
 
-	HRESULT Initilization (ID3D11Device * device, DWORD * data, UINT numOfIndices)
+	HRESULT Initialize (ID3D11Device * device, DWORD * data, UINT numOfIndices)
 	{
 		if (m_Buffer.Get () != nullptr)
 			m_Buffer.Reset ();
