@@ -53,25 +53,59 @@ namespace DXEngine
 		m_Timer.Restart ();
 	}
 
+#pragma region Mouse Events
+
 	void Engine::UpdateMouseEvents ()
 	{
 		while (!m_Mouse.EventBufferIsEmpty ())
 		{
 			MouseEvent mouseEvent = m_Mouse.ReadEvent ();
+
 			if (m_Mouse.IsRightDown ())
 			{
 				if (mouseEvent.GetType () == MouseEvent::EventType::RAW_MOVE)
 				{
-					this->m_Graphics.m_Camera.Transform.AdjustRot
-					(
-						static_cast<float>(mouseEvent.GetPosY ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
-						static_cast<float>(mouseEvent.GetPosX ()) * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
-						0.0f
-					);
+					RotateMainCamera (mouseEvent.GetPosX (), mouseEvent.GetPosY ());
+
+				}
+			}
+
+			if (m_Mouse.IsLeftDown ())
+			{
+				if (mouseEvent.GetType () == MouseEvent::EventType::RAW_MOVE)
+				{
+					if (m_Keyboard.KeyIsPressed ('R'))
+					{
+						RotateNanosuit3DModel (mouseEvent.GetPosX ());
+					}
 				}
 			}
 		}
 	}
+
+	void Engine::RotateMainCamera (float mousePosX, float mousePosY)
+	{
+		this->m_Graphics.m_Camera.Transform.AdjustRot
+		(
+			mousePosY * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+			mousePosX * this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+			0.0f
+		);
+	}
+
+	void Engine::RotateNanosuit3DModel (float mousePosX)
+	{
+		this->m_Graphics.m_Model.Transform.AdjustRot
+		(
+			0.0f,
+			mousePosX * -this->m_Graphics.m_Camera.GetCameraRotationSpeed (),
+			0.0f
+		);
+	}
+
+#pragma endregion
+
+#pragma region Keyboard Events
 
 	void Engine::UpdateKeyboardEvents ()
 	{
@@ -139,10 +173,10 @@ namespace DXEngine
 		{
 			XMVECTOR lightPosition = this->m_Graphics.m_Camera.Transform.GetPosVec ();
 			lightPosition += this->m_Graphics.m_Camera.Transform.GetVectorForward () * 4.0f;
-			
+
 			this->m_Graphics.m_Light.GetTransform ().SetPos (lightPosition);
-			this->m_Graphics.m_Light.GetTransform ().SetLookAt (this->m_Graphics.m_Model.Transform.GetPos ().x, this->m_Graphics.m_Model.Transform.GetPos ().y + 10.0f , this->m_Graphics.m_Model.Transform.GetPos ().z);
-			
+			this->m_Graphics.m_Light.GetTransform ().SetLookAt (this->m_Graphics.m_Model.Transform.GetPos ().x, this->m_Graphics.m_Model.Transform.GetPos ().y + 10.0f, this->m_Graphics.m_Model.Transform.GetPos ().z);
+
 		}
 	}
 
@@ -158,5 +192,7 @@ namespace DXEngine
 			this->m_Graphics.m_Model.Transform.AdjustRot (0.0f, -this->m_Graphics.m_Camera.GetCameraMoveSpeed () * m_DeltaTime * 0.2f, 0.0f);
 		}
 	}
+
+#pragma endregion
 
 }

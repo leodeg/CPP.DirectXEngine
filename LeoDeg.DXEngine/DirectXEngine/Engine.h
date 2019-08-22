@@ -22,11 +22,12 @@ namespace DXEngine
 	private:
 		void UpdateDeltaTime ();
 		void UpdateMouseEvents ();
+		void RotateMainCamera (float mousePosX, float mousePosY);
+		void RotateNanosuit3DModel (float mousePosX);
+
 		void UpdateKeyboardEvents ();
 		void UpdateCameraMovement ();
-
 		void MoveLight ();
-
 		void Rotate3DModel ();
 
 	};

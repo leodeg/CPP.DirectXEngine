@@ -2,10 +2,6 @@
 
 namespace DXEngine
 {
-	// ------------------------------
-	// INITIALIZE GRAPHICS
-	// ------------------------------
-
 	bool Graphics::Initialize (HWND hwnd, int width, int height)
 	{
 		this->m_WindowWidth = width;
@@ -48,10 +44,6 @@ namespace DXEngine
 		ImGui::StyleColorsDark ();
 	}
 
-	// ------------------------------
-	// GETTERS
-	// ------------------------------	
-
 	int Graphics::GetFpsCount ()
 	{
 		return this->m_FpsCounter;
@@ -62,17 +54,19 @@ namespace DXEngine
 		return this->m_FpsString;
 	}
 
-	// ------------------------------
-	// UPDATE FRAME
-	// ------------------------------
+
+#pragma region Update Frame
 
 	void Graphics::RenderFrame ()
 	{
+		UpdateConstantPixelShaderLightBuffer ();
 		UpdateDeviceContext ();
-		DrawTextureObject ();
-		DrawLightObjects ();
+
 		DrawSprites ();
+		DrawTextureObject ();
+
 		UpdateFPSCounter ();
+
 		RenderFonts ();
 		UpdateRenderingImGUI ();
 
@@ -80,7 +74,8 @@ namespace DXEngine
 		this->m_SwapChain->Present (0, NULL);
 	}
 
-	void Graphics::UpdateDeviceContext ()
+
+	void Graphics::UpdateConstantPixelShaderLightBuffer ()
 	{
 		this->m_ConstantPSLightBuffer.GetData ().dynamicLightColor = m_Light.lightColor;
 		this->m_ConstantPSLightBuffer.GetData ().dynamicLightStrength = m_Light.lightStrength;
@@ -91,7 +86,10 @@ namespace DXEngine
 
 		this->m_ConstantPSLightBuffer.ApplyChanges ();
 		this->m_DeviceContext->PSSetConstantBuffers (0, 1, this->m_ConstantPSLightBuffer.GetAddressOf ());
+	}
 
+	void Graphics::UpdateDeviceContext ()
+	{
 		// Colors
 		float bgColor[] = { 0.0f, 0.0f, 0.4f, 1.0f };
 
@@ -100,45 +98,42 @@ namespace DXEngine
 		this->m_DeviceContext->ClearDepthStencilView (this->m_DepthStencilView.Get (), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		// Input-Assembler Stage
-		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
 		this->m_DeviceContext->IASetPrimitiveTopology (D3D11_PRIMITIVE_TOPOLOGY::D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		// Rasterized state
 		this->m_DeviceContext->RSSetState (this->m_RasterizerStateCullBack.Get ());
-		this->m_DeviceContext->OMSetDepthStencilState (this->m_DepthStencilState.Get (), 0);
+		
 
 		// Blend factor
 		this->m_DeviceContext->OMSetBlendState (NULL, NULL, 0xFFFFFFFF);
 
 		// Shader set stage
 		this->m_DeviceContext->PSSetSamplers (0, 1, this->m_SamplerState.GetAddressOf ());
-		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
-		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
-	}
-
-	void Graphics::DrawTextureObject ()
-	{
-		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
-
-		m_Model.Draw (viewMatrix);
-
-	}
-
-	void Graphics::DrawLightObjects ()
-	{
-		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
-		this->m_DeviceContext->PSSetShader (m_PixelShaderNoLight.GetShader (), NULL, 0);
-
-		m_Light.DrawLightModel (viewMatrix);
+		
 	}
 
 	void Graphics::DrawSprites ()
 	{
+		m_DeviceContext->OMSetDepthStencilState (m_DepthStencilStateDrawMask.Get (), 0);
 		m_DeviceContext->IASetInputLayout (m_VertexShader2D.GetInputLayout ());
 		m_DeviceContext->PSSetShader (m_PixelShader2D.GetShader (), NULL, 0);
 		m_DeviceContext->VSSetShader (m_VertexShader2D.GetShader (), NULL, 0);
 
 		m_Sprite.Draw (m_Camera2D.Transform.GetWorldMatrix () * m_Camera2D.Transform.GetOrthoMatrix ());
+	}
+
+	void Graphics::DrawTextureObject ()
+	{
+		this->m_DeviceContext->VSSetShader (m_VertexShader.GetShader (), NULL, 0);
+		this->m_DeviceContext->PSSetShader (m_PixelShader.GetShader (), NULL, 0);
+		this->m_DeviceContext->IASetInputLayout (this->m_VertexShader.GetInputLayout ());
+		this->m_DeviceContext->OMSetDepthStencilState (this->m_DepthStencilStateApplyMask.Get (), 0);
+
+		XMMATRIX viewMatrix = m_Camera.Transform.GetViewMatrix () * m_Camera.Transform.GetProjectionMatrix ();
+
+		m_Model.Draw (viewMatrix);
+		m_Light.DrawLightModel (viewMatrix);
+
 	}
 
 	void Graphics::UpdateFPSCounter ()
@@ -162,16 +157,20 @@ namespace DXEngine
 
 	void Graphics::UpdateRenderingImGUI ()
 	{
-		// Start the ImGui frame
 		ImGui_ImplDX11_NewFrame ();
 		ImGui_ImplWin32_NewFrame ();
 		ImGui::NewFrame ();
 
-		// ----------------------------------------
-		// Scene Info
-		// ----------------------------------------
+		UpdateSceneInformationUI ();
+		UpdateSceneLightPropertiesUI ();
+		UpdateLightPropertiesUI ();
 
-		// Create ImGui Test Window
+		ImGui::Render ();
+		ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
+	}
+
+	void Graphics::UpdateSceneInformationUI ()
+	{
 		ImGui::Begin ("Scene Info");
 
 		ImGui::Text ("Camera:");
@@ -196,11 +195,10 @@ namespace DXEngine
 
 
 		ImGui::End ();
+	}
 
-		// ----------------------------------------
-		// Scene Lighting Properties
-		// ----------------------------------------
-
+	void Graphics::UpdateSceneLightPropertiesUI ()
+	{
 		ImGui::Begin ("Scene Lighting Properties");
 
 		ImGui::Text ("Light Controls:");
@@ -209,11 +207,10 @@ namespace DXEngine
 		ImGui::DragFloat ("Strength", &this->m_ConstantPSLightBuffer.GetData ().ambientLightStrength, 0.01f, 0.0f, 10.0f);
 
 		ImGui::End ();
+	}
 
-		// ----------------------------------------
-		// Light Properties
-		// ----------------------------------------
-
+	void Graphics::UpdateLightPropertiesUI ()
+	{
 		ImGui::Begin ("Light Properties");
 
 		ImGui::DragFloat3 ("Color", &this->m_Light.lightColor.x, 0.01f, 0.0f, 1.0f);
@@ -225,17 +222,11 @@ namespace DXEngine
 		ImGui::NewLine ();
 
 		ImGui::End ();
-
-		// Assemble Together Draw Data
-		ImGui::Render ();
-
-		// Render Draw Data
-		ImGui_ImplDX11_RenderDrawData (ImGui::GetDrawData ());
 	}
 
-	// ------------------------------
-	// INITIALIZE DIRECTX
-	// ------------------------------
+#pragma endregion
+
+#pragma region Initialize DirecX
 
 	void Graphics::InitializeDirectX (HWND hwnd)
 	{
@@ -244,8 +235,11 @@ namespace DXEngine
 		{
 			InitializeSwapChain (hwnd, hResult);
 			InitializeBackBufferAndRenderTargetView (hResult);
+
 			InitializeDepthStencilBuffer (hResult);
 			InitializeDepthStencilState (hResult);
+			InitializeDepthStencilStateDrawMask (hResult);
+			InitializeDepthStencilStateApplyMask (hResult);
 
 			InitializeViewport ();
 
@@ -340,10 +334,52 @@ namespace DXEngine
 	{
 		CD3D11_DEPTH_STENCIL_DESC depthStencilStateDesc (D3D11_DEFAULT);
 		depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS_EQUAL;
-
+		
 		hResult = this->m_Device->CreateDepthStencilState (&depthStencilStateDesc, this->m_DepthStencilState.GetAddressOf ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil state.");
 	}
+
+
+	void Graphics::InitializeDepthStencilStateDrawMask(HRESULT & hResult)
+	{
+		CD3D11_DEPTH_STENCIL_DESC depthStencilStateDescDrawMask (D3D11_DEFAULT);
+		depthStencilStateDescDrawMask.DepthEnable = FALSE;
+		depthStencilStateDescDrawMask.StencilEnable = TRUE;
+
+		depthStencilStateDescDrawMask.BackFace.StencilFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_NEVER;
+		depthStencilStateDescDrawMask.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescDrawMask.BackFace.StencilFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescDrawMask.BackFace.StencilPassOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+
+		depthStencilStateDescDrawMask.FrontFace.StencilFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_ALWAYS;
+		depthStencilStateDescDrawMask.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescDrawMask.FrontFace.StencilFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescDrawMask.FrontFace.StencilPassOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_INCR_SAT;
+
+		hResult = this->m_Device->CreateDepthStencilState (&depthStencilStateDescDrawMask, this->m_DepthStencilStateDrawMask.GetAddressOf ());
+		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil draw mask state.");		
+	}
+
+	void Graphics::InitializeDepthStencilStateApplyMask (HRESULT & hResult)
+	{
+		CD3D11_DEPTH_STENCIL_DESC depthStencilStateDescApplyMask (D3D11_DEFAULT);
+		depthStencilStateDescApplyMask.DepthEnable = FALSE;
+		depthStencilStateDescApplyMask.StencilEnable = TRUE;
+
+		depthStencilStateDescApplyMask.BackFace.StencilFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_NEVER;
+		depthStencilStateDescApplyMask.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescApplyMask.BackFace.StencilFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescApplyMask.BackFace.StencilPassOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+
+		depthStencilStateDescApplyMask.FrontFace.StencilFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS;
+		depthStencilStateDescApplyMask.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescApplyMask.FrontFace.StencilFailOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+		depthStencilStateDescApplyMask.FrontFace.StencilPassOp = D3D11_STENCIL_OP::D3D11_STENCIL_OP_KEEP;
+
+		hResult = this->m_Device->CreateDepthStencilState (&depthStencilStateDescApplyMask, this->m_DepthStencilStateApplyMask.GetAddressOf ());
+		COM_ERROR_IF_FAILED (hResult, "Failed to create depth stencil apply mask state.");
+	}
+
 
 	void Graphics::InitializeViewport ()
 	{
@@ -403,17 +439,19 @@ namespace DXEngine
 		COM_ERROR_IF_FAILED (hResult, "Failed to create sampler state.");
 	}
 
-	// ------------------------------
-	// INITIALIZE SHADERS
-	// ------------------------------
+#pragma endregion
+
+#pragma region Initialize Shaders
 
 	void Graphics::InitializeShaders ()
 	{
-		std::wstring shaderfolder = DetermineShaderPath ();
+		std::wstring shaderFolder = DetermineShaderPathBySolutionConfigAndPlatforms ();
+		Initialize2DShaders (shaderFolder);
+		Initialize3DShaders (shaderFolder);
+	}
 
-		// ------------------------------
-		// 2D Shaders
-		// ------------------------------
+	void Graphics::Initialize2DShaders (std::wstring shaderfolder)
+	{
 		D3D11_INPUT_ELEMENT_DESC layout2D[] =
 		{
 			{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0  },
@@ -433,10 +471,10 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader 2D initialization.");
 			return;
 		}
+	}
 
-		// ------------------------------
-		// 3D Shaders
-		// ------------------------------
+	void Graphics::Initialize3DShaders (std::wstring shaderfolder)
+	{
 		D3D11_INPUT_ELEMENT_DESC layout3D[] =
 		{
 			{ "POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0,  },
@@ -465,7 +503,7 @@ namespace DXEngine
 		}
 	}
 
-	std::wstring Graphics::DetermineShaderPath ()
+	std::wstring Graphics::DetermineShaderPathBySolutionConfigAndPlatforms ()
 	{
 		std::wstring shaderfolder = L"";
 
@@ -493,9 +531,9 @@ namespace DXEngine
 		return shaderfolder;
 	}
 
-	// ------------------------------
-	// INITIALIZE SCENE
-	// ------------------------------
+#pragma endregion
+
+#pragma region Initialize Scene
 
 	void Graphics::InitializeScene ()
 	{
@@ -506,6 +544,7 @@ namespace DXEngine
 			LoadTextures (hResult);
 			InitializeConstantBuffers (hResult);
 			InitializeMainCamera ();
+			Initialize2DCamera ();
 			InitializeModels ();
 		}
 		catch (COMException & exception)
@@ -516,7 +555,6 @@ namespace DXEngine
 
 	void Graphics::LoadTextures (HRESULT & hResult)
 	{
-		// LOAD TEXTURE
 		hResult = DirectX::CreateWICTextureFromFile (this->m_Device.Get (), L"Data\\3DModels\\nanosuit\\leg_showroom_spec.png", nullptr, m_FirstTexture.GetAddressOf ());
 		COM_ERROR_IF_FAILED (hResult, "Failed to create First WIC texture from file.");
 	}
@@ -540,13 +578,15 @@ namespace DXEngine
 	{
 		m_Camera.Transform.SetPos (0.0f, 0.0f, -10.0f);
 		m_Camera.Transform.SetProjectionValues (90.0f, static_cast<float>(m_WindowWidth) / static_cast<float>(m_WindowHeight), 0.1f, 1000.0f);
+	}
 
+	void Graphics::Initialize2DCamera ()
+	{
 		m_Camera2D.Transform.SetProjectionValues (m_WindowWidth, m_WindowHeight, 0.0f, 1.0f);
 	}
 
 	void Graphics::InitializeModels ()
 	{
-		//if (!m_Model.Initialize ("Data\\3DModels\\Samples\\dodge_challenger.fbx", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		if (!m_Model.Initialize ("Data\\3DModels\\nanosuit\\nanosuit.obj", this->m_Device.Get (), this->m_DeviceContext.Get (), this->m_ConstantVSBuffer))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Models failed to initialize");
@@ -559,7 +599,7 @@ namespace DXEngine
 			return;
 		}
 
-		if (!m_Sprite.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), 256, 256, "Data\\Textures\\sprite_256x256.png", m_ConstantVSBuffer2D))
+		if (!m_Sprite.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), 500, 500, "Data\\Textures\\sprite_256x256.png", m_ConstantVSBuffer2D))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Sprite failed to initialize");
 			return;
@@ -567,7 +607,8 @@ namespace DXEngine
 
 		m_Sprite.Transform.SetPos (-m_WindowWidth / 2.0f, -m_WindowHeight / 2.0f, 0.0f);
 		//m_Sprite.Transform.SetPos (0.0f, 0.0f, 0.0f);
-
+		//m_Sprite.Transform.SetPos (-128.0f, -128.0f, 0.0f);
 	}
 
+#pragma endregion
 }

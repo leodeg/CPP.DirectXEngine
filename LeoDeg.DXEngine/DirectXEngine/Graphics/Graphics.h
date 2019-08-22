@@ -29,30 +29,33 @@ namespace DXEngine
 		void InitializeImGui (HWND hwnd);
 		void RenderFrame ();
 
-		// Update methods
-		void RenderFonts ();
-		void UpdateFPSCounter ();
-		void UpdateDeviceContext ();
-		void UpdateRenderingImGUI ();
-
-		// Create methods
-		void DrawTextureObject ();
-
-		void DrawLightObjects ();
-
-		void DrawSprites ();
-
-		// Getters
 		int GetFpsCount ();
 		std::string GetFpsString ();
 
 	private:
+		// Update methods
+		void RenderFonts ();
+		void UpdateFPSCounter ();
+		void UpdateDeviceContext ();
+		void DrawTextureObject ();
+		void DrawSprites ();
+		void UpdateConstantPixelShaderLightBuffer ();
+
+		// Update UI
+		void UpdateRenderingImGUI ();
+		void UpdateLightPropertiesUI ();
+		void UpdateSceneLightPropertiesUI ();
+		void UpdateSceneInformationUI ();
+
 		// Initialize DirectX 
 		void InitializeDirectX (HWND hwnd);
 		void InitializeSwapChain (HWND hwnd, HRESULT & hResult);
 		void InitializeBackBufferAndRenderTargetView (HRESULT & hResult);
 		void InitializeDepthStencilBuffer (HRESULT & hResult);
 		void InitializeDepthStencilState (HRESULT & hResult);
+		void InitializeDepthStencilStateDrawMask (HRESULT & hResult);
+		void InitializeDepthStencilStateApplyMask (HRESULT & hResult);
+
 		void InitializeViewport ();
 		void InitializeRasterizedState (HRESULT & hResult);
 		void InitializeBlendState (HRESULT & hResult);
@@ -61,23 +64,23 @@ namespace DXEngine
 
 		// Initialize Shaders
 		void InitializeShaders ();
-		std::wstring DetermineShaderPath ();
+		void Initialize3DShaders (std::wstring shaderfolder);
+		void Initialize2DShaders (std::wstring shaderfolder);
+		std::wstring DetermineShaderPathBySolutionConfigAndPlatforms ();
 
 		// Initialize Scene
 		void InitializeScene ();
-
 		void InitializeModels ();
-
 		void LoadTextures (HRESULT & hResult);
 		void InitializeConstantBuffers (HRESULT & hResult);
 		void InitializeMainCamera ();
+		void Initialize2DCamera ();
 
 	public:
 		Camera m_Camera;
 		Camera2D m_Camera2D;
 		RenderableGameObject m_GameObject;
 
-		// Models
 		Model m_Model;
 		Light m_Light;
 
@@ -92,8 +95,6 @@ namespace DXEngine
 		Timer m_FpsTimer;
 		int m_FpsCounter;
 		std::string m_FpsString;
-
-		
 
 		// Graphics Base
 		Microsoft::WRL::ComPtr<ID3D11Device> m_Device; // It is used to create resources
@@ -117,6 +118,8 @@ namespace DXEngine
 		Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBuffer;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DepthStencilView;
 		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilState;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilStateDrawMask;
+		Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_DepthStencilStateApplyMask;
 
 		// Texture States
 		Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_RasterizerStateCullBack;
