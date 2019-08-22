@@ -84,7 +84,8 @@ namespace DXEngine
 		Model m_Model;
 		Light m_Light;
 
-		Sprite m_Sprite;
+		Sprite m_SpriteSquare;
+		Sprite m_SpriteCircle;
 
 	private:
 		// Properties
@@ -107,6 +108,7 @@ namespace DXEngine
 		VertexShader m_VertexShader2D;
 		PixelShader m_PixelShader;
 		PixelShader m_PixelShader2D;
+		PixelShader m_PixelShader2DDiscard;
 		PixelShader m_PixelShaderNoLight;
 
 		// Buffers

@@ -283,6 +283,9 @@
     <FxCompile Include="vertexshader_2D.hlsl">
       <Filter>Resource Files\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="pixelshader_2D_discard.hlsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Data\Textures\tex_01.jpg">

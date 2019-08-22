@@ -102,7 +102,6 @@ namespace DXEngine
 
 		// Rasterized state
 		this->m_DeviceContext->RSSetState (this->m_RasterizerStateCullBack.Get ());
-		
 
 		// Blend factor
 		this->m_DeviceContext->OMSetBlendState (NULL, NULL, 0xFFFFFFFF);
@@ -116,10 +115,13 @@ namespace DXEngine
 	{
 		m_DeviceContext->OMSetDepthStencilState (m_DepthStencilStateDrawMask.Get (), 0);
 		m_DeviceContext->IASetInputLayout (m_VertexShader2D.GetInputLayout ());
-		m_DeviceContext->PSSetShader (m_PixelShader2D.GetShader (), NULL, 0);
+		//m_DeviceContext->PSSetShader (m_PixelShader2D.GetShader (), NULL, 0); // Full sprite rendering
+		//m_DeviceContext->PSSetShader (nullptr, NULL, 0); // Just mask rendering effect
+		m_DeviceContext->PSSetShader (m_PixelShader2DDiscard.GetShader (), NULL, 0); // Apply mask and discard transparency on texture
 		m_DeviceContext->VSSetShader (m_VertexShader2D.GetShader (), NULL, 0);
 
-		m_Sprite.Draw (m_Camera2D.Transform.GetWorldMatrix () * m_Camera2D.Transform.GetOrthoMatrix ());
+		// m_SpriteSquare.Draw (m_Camera2D.Transform.GetWorldMatrix () * m_Camera2D.Transform.GetOrthoMatrix ());
+		m_SpriteCircle.Draw (m_Camera2D.Transform.GetWorldMatrix () * m_Camera2D.Transform.GetOrthoMatrix ());
 	}
 
 	void Graphics::DrawTextureObject ()
@@ -471,6 +473,12 @@ namespace DXEngine
 			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader 2D initialization.");
 			return;
 		}
+
+		if (!m_PixelShader2DDiscard.Initialize (this->m_Device, shaderfolder + L"pixelshader_2D_discard.cso"))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Failed Pixel Shader 2D initialization.");
+			return;
+		}
 	}
 
 	void Graphics::Initialize3DShaders (std::wstring shaderfolder)
@@ -599,13 +607,20 @@ namespace DXEngine
 			return;
 		}
 
-		if (!m_Sprite.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), 500, 500, "Data\\Textures\\sprite_256x256.png", m_ConstantVSBuffer2D))
+		if (!m_SpriteSquare.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), 500, 500, "Data\\Textures\\sprite_256x256.png", m_ConstantVSBuffer2D))
 		{
 			COM_ERROR_IF_FAILED (NULL, "Sprite failed to initialize");
 			return;
 		}
 
-		m_Sprite.Transform.SetPos (-m_WindowWidth / 2.0f, -m_WindowHeight / 2.0f, 0.0f);
+		if (!m_SpriteCircle.Initialize (this->m_Device.Get (), this->m_DeviceContext.Get (), 500, 500, "Data\\Textures\\circle.png", m_ConstantVSBuffer2D))
+		{
+			COM_ERROR_IF_FAILED (NULL, "Sprite failed to initialize");
+			return;
+		}
+
+		m_SpriteSquare.Transform.SetPos (-m_WindowWidth / 2.0f, -m_WindowHeight / 2.0f, 0.0f);
+		m_SpriteCircle.Transform.SetPos (-m_WindowWidth / 2.0f, -m_WindowHeight / 2.0f, 0.0f);
 		//m_Sprite.Transform.SetPos (0.0f, 0.0f, 0.0f);
 		//m_Sprite.Transform.SetPos (-128.0f, -128.0f, 0.0f);
 	}
